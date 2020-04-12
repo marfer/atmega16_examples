@@ -1,0 +1,72 @@
+SPI	../arduino_libs/SPI/src/SPI.cpp	17
+SPIClass::begin	../arduino_libs/SPI/src/SPI.cpp	/^void SPIClass::begin()$/
+SPIClass::end	../arduino_libs/SPI/src/SPI.cpp	/^void SPIClass::end() {$/
+SPIClass::inTransactionFlag	../arduino_libs/SPI/src/SPI.cpp	24
+SPIClass::initialized	../arduino_libs/SPI/src/SPI.cpp	19
+SPIClass::interruptMask	../arduino_libs/SPI/src/SPI.cpp	21
+SPIClass::interruptMode	../arduino_libs/SPI/src/SPI.cpp	20
+SPIClass::interruptSave	../arduino_libs/SPI/src/SPI.cpp	22
+SPIClass::notUsingInterrupt	../arduino_libs/SPI/src/SPI.cpp	/^void SPIClass::notUsingInterrupt(uint8_t interrupt/
+SPIClass::usingInterrupt	../arduino_libs/SPI/src/SPI.cpp	/^void SPIClass::usingInterrupt(uint8_t interruptNum/
+SPI_INT0_MASK	../arduino_libs/SPI/src/SPI.cpp	86
+SPI_INT0_MASK	../arduino_libs/SPI/src/SPI.cpp	92
+SPI_INT0_MASK	../arduino_libs/SPI/src/SPI.cpp	101
+SPI_INT0_MASK	../arduino_libs/SPI/src/SPI.cpp	111
+SPI_INT1_MASK	../arduino_libs/SPI/src/SPI.cpp	87
+SPI_INT1_MASK	../arduino_libs/SPI/src/SPI.cpp	93
+SPI_INT1_MASK	../arduino_libs/SPI/src/SPI.cpp	102
+SPI_INT1_MASK	../arduino_libs/SPI/src/SPI.cpp	114
+SPI_INT2_MASK	../arduino_libs/SPI/src/SPI.cpp	88
+SPI_INT2_MASK	../arduino_libs/SPI/src/SPI.cpp	94
+SPI_INT2_MASK	../arduino_libs/SPI/src/SPI.cpp	103
+SPI_INT2_MASK	../arduino_libs/SPI/src/SPI.cpp	117
+SPI_INT3_MASK	../arduino_libs/SPI/src/SPI.cpp	89
+SPI_INT3_MASK	../arduino_libs/SPI/src/SPI.cpp	95
+SPI_INT3_MASK	../arduino_libs/SPI/src/SPI.cpp	104
+SPI_INT4_MASK	../arduino_libs/SPI/src/SPI.cpp	90
+SPI_INT4_MASK	../arduino_libs/SPI/src/SPI.cpp	96
+SPI_INT4_MASK	../arduino_libs/SPI/src/SPI.cpp	105
+SPI_INT5_MASK	../arduino_libs/SPI/src/SPI.cpp	97
+SPI_INT5_MASK	../arduino_libs/SPI/src/SPI.cpp	106
+SPI_INT6_MASK	../arduino_libs/SPI/src/SPI.cpp	98
+SPI_INT6_MASK	../arduino_libs/SPI/src/SPI.cpp	107
+SPI_INT7_MASK	../arduino_libs/SPI/src/SPI.cpp	99
+SPI_INT7_MASK	../arduino_libs/SPI/src/SPI.cpp	108
+TwoWire::TwoWire	../arduino_libs/Wire/src/Wire.cpp	/^TwoWire::TwoWire()$/
+TwoWire::available	../arduino_libs/Wire/src/Wire.cpp	/^int TwoWire::available(void)$/
+TwoWire::begin	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::begin(void)$/
+TwoWire::begin	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::begin(uint8_t address)$/
+TwoWire::begin	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::begin(int address)$/
+TwoWire::beginTransmission	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::beginTransmission(uint8_t address)$/
+TwoWire::beginTransmission	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::beginTransmission(int address)$/
+TwoWire::end	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::end(void)$/
+TwoWire::endTransmission	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::endTransmission(uint8_t sendStop)/
+TwoWire::endTransmission	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::endTransmission(void)$/
+TwoWire::flush	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::flush(void)$/
+TwoWire::onReceive	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::onReceive( void (*function)(int) )$/
+TwoWire::onReceiveService	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::onReceiveService(uint8_t* inBytes, i/
+TwoWire::onRequest	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::onRequest( void (*function)(void) )$/
+TwoWire::onRequestService	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::onRequestService(void)$/
+TwoWire::peek	../arduino_libs/Wire/src/Wire.cpp	/^int TwoWire::peek(void)$/
+TwoWire::read	../arduino_libs/Wire/src/Wire.cpp	/^int TwoWire::read(void)$/
+TwoWire::requestFrom	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::requestFrom(uint8_t address, uint/
+TwoWire::requestFrom	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::requestFrom(uint8_t address, uint/
+TwoWire::requestFrom	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::requestFrom(uint8_t address, uint/
+TwoWire::requestFrom	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::requestFrom(int address, int quan/
+TwoWire::requestFrom	../arduino_libs/Wire/src/Wire.cpp	/^uint8_t TwoWire::requestFrom(int address, int quan/
+TwoWire::rxBuffer	../arduino_libs/Wire/src/Wire.cpp	34
+TwoWire::rxBufferIndex	../arduino_libs/Wire/src/Wire.cpp	35
+TwoWire::rxBufferLength	../arduino_libs/Wire/src/Wire.cpp	36
+TwoWire::setClock	../arduino_libs/Wire/src/Wire.cpp	/^void TwoWire::setClock(uint32_t clock)$/
+TwoWire::transmitting	../arduino_libs/Wire/src/Wire.cpp	43
+TwoWire::txAddress	../arduino_libs/Wire/src/Wire.cpp	38
+TwoWire::txBuffer	../arduino_libs/Wire/src/Wire.cpp	39
+TwoWire::txBufferIndex	../arduino_libs/Wire/src/Wire.cpp	40
+TwoWire::txBufferLength	../arduino_libs/Wire/src/Wire.cpp	41
+TwoWire::write	../arduino_libs/Wire/src/Wire.cpp	/^size_t TwoWire::write(uint8_t data)$/
+TwoWire::write	../arduino_libs/Wire/src/Wire.cpp	/^size_t TwoWire::write(const uint8_t *data, size_t /
+Wire	../arduino_libs/Wire/src/Wire.cpp	330
+blink	src/test_lib.cpp	/^void blink(uint8_t pin){$/
+loop	src/test_lib.cpp	/^void loop(){$/
+setup	src/test_lib.cpp	/^void setup(){$/
+stop	src/test_lib.cpp	10

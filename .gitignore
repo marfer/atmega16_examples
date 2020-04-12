@@ -1,0 +1,12 @@
+*.swp
+obj
+
+.dep
+.map
+*.eep
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+bin

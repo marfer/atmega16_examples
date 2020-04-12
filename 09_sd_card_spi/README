@@ -1,0 +1,7 @@
+This is a sample code to communicate with SD card over SPI. It initialize card to use SPI mode and output to UART content of first 512 bytes of the card
+
+NOTE:
+	1. AVR Chip has to be sourced by 3.3V
+	2. External Oscilator should be used in this setup. (I use 16MHz)
+	3. 
+

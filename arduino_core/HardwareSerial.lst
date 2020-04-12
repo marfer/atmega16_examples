@@ -1,0 +1,1165 @@
+   1               		.file	"HardwareSerial.cpp"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	_ZN14HardwareSerial9availableEv
+  12               	_ZN14HardwareSerial9availableEv:
+  13               	.LFB121:
+  14               		.file 1 "HardwareSerial.cpp"
+   1:HardwareSerial.cpp **** /*
+   2:HardwareSerial.cpp ****   HardwareSerial.cpp - Hardware serial library for Wiring
+   3:HardwareSerial.cpp ****   Copyright (c) 2006 Nicholas Zambetti.  All right reserved.
+   4:HardwareSerial.cpp **** 
+   5:HardwareSerial.cpp ****   This library is free software; you can redistribute it and/or
+   6:HardwareSerial.cpp ****   modify it under the terms of the GNU Lesser General Public
+   7:HardwareSerial.cpp ****   License as published by the Free Software Foundation; either
+   8:HardwareSerial.cpp ****   version 2.1 of the License, or (at your option) any later version.
+   9:HardwareSerial.cpp **** 
+  10:HardwareSerial.cpp ****   This library is distributed in the hope that it will be useful,
+  11:HardwareSerial.cpp ****   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12:HardwareSerial.cpp ****   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  13:HardwareSerial.cpp ****   Lesser General Public License for more details.
+  14:HardwareSerial.cpp **** 
+  15:HardwareSerial.cpp ****   You should have received a copy of the GNU Lesser General Public
+  16:HardwareSerial.cpp ****   License along with this library; if not, write to the Free Software
+  17:HardwareSerial.cpp ****   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  18:HardwareSerial.cpp ****   
+  19:HardwareSerial.cpp ****   Modified 23 November 2006 by David A. Mellis
+  20:HardwareSerial.cpp ****   Modified 28 September 2010 by Mark Sproul
+  21:HardwareSerial.cpp ****   Modified 14 August 2012 by Alarus
+  22:HardwareSerial.cpp ****   Modified 3 December 2013 by Matthijs Kooijman
+  23:HardwareSerial.cpp **** */
+  24:HardwareSerial.cpp **** 
+  25:HardwareSerial.cpp **** #include <stdlib.h>
+  26:HardwareSerial.cpp **** #include <stdio.h>
+  27:HardwareSerial.cpp **** #include <string.h>
+  28:HardwareSerial.cpp **** #include <inttypes.h>
+  29:HardwareSerial.cpp **** #include <util/atomic.h>
+  30:HardwareSerial.cpp **** //include "Arduino.h"
+  31:HardwareSerial.cpp **** 
+  32:HardwareSerial.cpp **** #include "HardwareSerial.h"
+  33:HardwareSerial.cpp **** #include "HardwareSerial_private.h"
+  34:HardwareSerial.cpp **** 
+  35:HardwareSerial.cpp **** // this next line disables the entire HardwareSerial.cpp, 
+  36:HardwareSerial.cpp **** // this is so I can support Attiny series and any other chip without a uart
+  37:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL0) || defined(HAVE_HWSERIAL1) || defined(HAVE_HWSERIAL2) || defined(HAVE_H
+  38:HardwareSerial.cpp **** 
+  39:HardwareSerial.cpp **** // SerialEvent functions are weak, so when the user doesn't define them,
+  40:HardwareSerial.cpp **** // the linker just sets their address to 0 (which is checked below).
+  41:HardwareSerial.cpp **** // The Serialx_available is just a wrapper around Serialx.available(),
+  42:HardwareSerial.cpp **** // but we can refer to it weakly so we don't pull in the entire
+  43:HardwareSerial.cpp **** // HardwareSerial instance if the user doesn't also refer to it.
+  44:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL0)
+  45:HardwareSerial.cpp ****   void serialEvent() __attribute__((weak));
+  46:HardwareSerial.cpp ****   bool Serial0_available() __attribute__((weak));
+  47:HardwareSerial.cpp **** #endif
+  48:HardwareSerial.cpp **** 
+  49:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL1)
+  50:HardwareSerial.cpp ****   void serialEvent1() __attribute__((weak));
+  51:HardwareSerial.cpp ****   bool Serial1_available() __attribute__((weak));
+  52:HardwareSerial.cpp **** #endif
+  53:HardwareSerial.cpp **** 
+  54:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL2)
+  55:HardwareSerial.cpp ****   void serialEvent2() __attribute__((weak));
+  56:HardwareSerial.cpp ****   bool Serial2_available() __attribute__((weak));
+  57:HardwareSerial.cpp **** #endif
+  58:HardwareSerial.cpp **** 
+  59:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL3)
+  60:HardwareSerial.cpp ****   void serialEvent3() __attribute__((weak));
+  61:HardwareSerial.cpp ****   bool Serial3_available() __attribute__((weak));
+  62:HardwareSerial.cpp **** #endif
+  63:HardwareSerial.cpp **** 
+  64:HardwareSerial.cpp **** void serialEventRun(void)
+  65:HardwareSerial.cpp **** {
+  66:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL0)
+  67:HardwareSerial.cpp ****   if (Serial0_available && serialEvent && Serial0_available()) serialEvent();
+  68:HardwareSerial.cpp **** #endif
+  69:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL1)
+  70:HardwareSerial.cpp ****   if (Serial1_available && serialEvent1 && Serial1_available()) serialEvent1();
+  71:HardwareSerial.cpp **** #endif
+  72:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL2)
+  73:HardwareSerial.cpp ****   if (Serial2_available && serialEvent2 && Serial2_available()) serialEvent2();
+  74:HardwareSerial.cpp **** #endif
+  75:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL3)
+  76:HardwareSerial.cpp ****   if (Serial3_available && serialEvent3 && Serial3_available()) serialEvent3();
+  77:HardwareSerial.cpp **** #endif
+  78:HardwareSerial.cpp **** }
+  79:HardwareSerial.cpp **** 
+  80:HardwareSerial.cpp **** // macro to guard critical sections when needed for large TX buffer sizes
+  81:HardwareSerial.cpp **** #if (SERIAL_TX_BUFFER_SIZE>256)
+  82:HardwareSerial.cpp **** #define TX_BUFFER_ATOMIC ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  83:HardwareSerial.cpp **** #else
+  84:HardwareSerial.cpp **** #define TX_BUFFER_ATOMIC
+  85:HardwareSerial.cpp **** #endif
+  86:HardwareSerial.cpp **** 
+  87:HardwareSerial.cpp **** // Actual interrupt handlers //////////////////////////////////////////////////////////////
+  88:HardwareSerial.cpp **** 
+  89:HardwareSerial.cpp **** void HardwareSerial::_tx_udr_empty_irq(void)
+  90:HardwareSerial.cpp **** {
+  91:HardwareSerial.cpp ****   // If interrupts are enabled, there must be more data in the output
+  92:HardwareSerial.cpp ****   // buffer. Send the next byte
+  93:HardwareSerial.cpp ****   unsigned char c = _tx_buffer[_tx_buffer_tail];
+  94:HardwareSerial.cpp ****   _tx_buffer_tail = (_tx_buffer_tail + 1) % SERIAL_TX_BUFFER_SIZE;
+  95:HardwareSerial.cpp **** 
+  96:HardwareSerial.cpp ****   *_udr = c;
+  97:HardwareSerial.cpp **** 
+  98:HardwareSerial.cpp ****   // clear the TXC bit -- "can be cleared by writing a one to its bit
+  99:HardwareSerial.cpp ****   // location". This makes sure flush() won't return until the bytes
+ 100:HardwareSerial.cpp ****   // actually got written. Other r/w bits are preserved, and zeroes
+ 101:HardwareSerial.cpp ****   // written to the rest.
+ 102:HardwareSerial.cpp **** 
+ 103:HardwareSerial.cpp **** #ifdef MPCM0
+ 104:HardwareSerial.cpp ****   *_ucsra = ((*_ucsra) & ((1 << U2X0) | (1 << MPCM0))) | (1 << TXC0);
+ 105:HardwareSerial.cpp **** #else
+ 106:HardwareSerial.cpp ****   *_ucsra = ((*_ucsra) & ((1 << U2X0) | (1 << TXC0)));
+ 107:HardwareSerial.cpp **** #endif
+ 108:HardwareSerial.cpp **** 
+ 109:HardwareSerial.cpp ****   if (_tx_buffer_head == _tx_buffer_tail) {
+ 110:HardwareSerial.cpp ****     // Buffer empty, so disable interrupts
+ 111:HardwareSerial.cpp ****     cbi(*_ucsrb, UDRIE0);
+ 112:HardwareSerial.cpp ****   }
+ 113:HardwareSerial.cpp **** }
+ 114:HardwareSerial.cpp **** 
+ 115:HardwareSerial.cpp **** // Public Methods //////////////////////////////////////////////////////////////
+ 116:HardwareSerial.cpp **** 
+ 117:HardwareSerial.cpp **** void HardwareSerial::begin(unsigned long baud, byte config)
+ 118:HardwareSerial.cpp **** {
+ 119:HardwareSerial.cpp ****   // Try u2x mode first
+ 120:HardwareSerial.cpp ****   uint16_t baud_setting = (F_CPU / 4 / baud - 1) / 2;
+ 121:HardwareSerial.cpp ****   *_ucsra = 1 << U2X0;
+ 122:HardwareSerial.cpp **** 
+ 123:HardwareSerial.cpp ****   // hardcoded exception for 57600 for compatibility with the bootloader
+ 124:HardwareSerial.cpp ****   // shipped with the Duemilanove and previous boards and the firmware
+ 125:HardwareSerial.cpp ****   // on the 8U2 on the Uno and Mega 2560. Also, The baud_setting cannot
+ 126:HardwareSerial.cpp ****   // be > 4095, so switch back to non-u2x mode if the baud rate is too
+ 127:HardwareSerial.cpp ****   // low.
+ 128:HardwareSerial.cpp ****   if (((F_CPU == 16000000UL) && (baud == 57600)) || (baud_setting >4095))
+ 129:HardwareSerial.cpp ****   {
+ 130:HardwareSerial.cpp ****     *_ucsra = 0;
+ 131:HardwareSerial.cpp ****     baud_setting = (F_CPU / 8 / baud - 1) / 2;
+ 132:HardwareSerial.cpp ****   }
+ 133:HardwareSerial.cpp **** 
+ 134:HardwareSerial.cpp ****   // assign the baud_setting, a.k.a. ubrr (USART Baud Rate Register)
+ 135:HardwareSerial.cpp ****   *_ubrrh = baud_setting >> 8;
+ 136:HardwareSerial.cpp ****   *_ubrrl = baud_setting;
+ 137:HardwareSerial.cpp **** 
+ 138:HardwareSerial.cpp ****   _written = false;
+ 139:HardwareSerial.cpp **** 
+ 140:HardwareSerial.cpp ****   //set the data bits, parity, and stop bits
+ 141:HardwareSerial.cpp **** #if defined(__AVR_ATmega8__)
+ 142:HardwareSerial.cpp ****   config |= 0x80; // select UCSRC register (shared with UBRRH)
+ 143:HardwareSerial.cpp **** #endif
+ 144:HardwareSerial.cpp ****   *_ucsrc = config;
+ 145:HardwareSerial.cpp ****   
+ 146:HardwareSerial.cpp ****   sbi(*_ucsrb, RXEN0);
+ 147:HardwareSerial.cpp ****   sbi(*_ucsrb, TXEN0);
+ 148:HardwareSerial.cpp ****   sbi(*_ucsrb, RXCIE0);
+ 149:HardwareSerial.cpp ****   cbi(*_ucsrb, UDRIE0);
+ 150:HardwareSerial.cpp **** }
+ 151:HardwareSerial.cpp **** 
+ 152:HardwareSerial.cpp **** void HardwareSerial::end()
+ 153:HardwareSerial.cpp **** {
+ 154:HardwareSerial.cpp ****   // wait for transmission of outgoing data
+ 155:HardwareSerial.cpp ****   flush();
+ 156:HardwareSerial.cpp **** 
+ 157:HardwareSerial.cpp ****   cbi(*_ucsrb, RXEN0);
+ 158:HardwareSerial.cpp ****   cbi(*_ucsrb, TXEN0);
+ 159:HardwareSerial.cpp ****   cbi(*_ucsrb, RXCIE0);
+ 160:HardwareSerial.cpp ****   cbi(*_ucsrb, UDRIE0);
+ 161:HardwareSerial.cpp ****   
+ 162:HardwareSerial.cpp ****   // clear any received data
+ 163:HardwareSerial.cpp ****   _rx_buffer_head = _rx_buffer_tail;
+ 164:HardwareSerial.cpp **** }
+ 165:HardwareSerial.cpp **** 
+ 166:HardwareSerial.cpp **** int HardwareSerial::available(void)
+ 167:HardwareSerial.cpp **** {
+  15               		.loc 1 167 0
+  16               		.cfi_startproc
+  17               	.LVL0:
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  22 0000 FC01      		movw r30,r24
+ 168:HardwareSerial.cpp ****   return ((unsigned int)(SERIAL_RX_BUFFER_SIZE + _rx_buffer_head - _rx_buffer_tail)) % SERIAL_RX_BU
+  23               		.loc 1 168 0
+  24 0002 918D      		ldd r25,Z+25
+  25 0004 228D      		ldd r18,Z+26
+  26 0006 892F      		mov r24,r25
+  27               	.LVL1:
+  28 0008 90E0      		ldi r25,0
+  29 000a 805C      		subi r24,-64
+  30 000c 9F4F      		sbci r25,-1
+  31 000e 821B      		sub r24,r18
+  32 0010 9109      		sbc r25,__zero_reg__
+ 169:HardwareSerial.cpp **** }
+  33               		.loc 1 169 0
+  34 0012 8F73      		andi r24,63
+  35 0014 9927      		clr r25
+  36 0016 0895      		ret
+  37               		.cfi_endproc
+  38               	.LFE121:
+  40               	.global	_ZN14HardwareSerial4peekEv
+  42               	_ZN14HardwareSerial4peekEv:
+  43               	.LFB122:
+ 170:HardwareSerial.cpp **** 
+ 171:HardwareSerial.cpp **** int HardwareSerial::peek(void)
+ 172:HardwareSerial.cpp **** {
+  44               		.loc 1 172 0
+  45               		.cfi_startproc
+  46               	.LVL2:
+  47               	/* prologue: function */
+  48               	/* frame size = 0 */
+  49               	/* stack size = 0 */
+  50               	.L__stack_usage = 0
+  51 0018 FC01      		movw r30,r24
+ 173:HardwareSerial.cpp ****   if (_rx_buffer_head == _rx_buffer_tail) {
+  52               		.loc 1 173 0
+  53 001a 918D      		ldd r25,Z+25
+  54 001c 828D      		ldd r24,Z+26
+  55               	.LVL3:
+  56 001e 9817      		cp r25,r24
+  57 0020 01F0      		breq .L4
+ 174:HardwareSerial.cpp ****     return -1;
+ 175:HardwareSerial.cpp ****   } else {
+ 176:HardwareSerial.cpp ****     return _rx_buffer[_rx_buffer_tail];
+  58               		.loc 1 176 0
+  59 0022 828D      		ldd r24,Z+26
+  60 0024 E80F      		add r30,r24
+  61 0026 F11D      		adc r31,__zero_reg__
+  62               	.LVL4:
+  63 0028 858D      		ldd r24,Z+29
+  64 002a 90E0      		ldi r25,0
+  65 002c 0895      		ret
+  66               	.LVL5:
+  67               	.L4:
+ 174:HardwareSerial.cpp ****     return -1;
+  68               		.loc 1 174 0
+  69 002e 8FEF      		ldi r24,lo8(-1)
+  70 0030 9FEF      		ldi r25,lo8(-1)
+ 177:HardwareSerial.cpp ****   }
+ 178:HardwareSerial.cpp **** }
+  71               		.loc 1 178 0
+  72 0032 0895      		ret
+  73               		.cfi_endproc
+  74               	.LFE122:
+  76               	.global	_ZN14HardwareSerial4readEv
+  78               	_ZN14HardwareSerial4readEv:
+  79               	.LFB123:
+ 179:HardwareSerial.cpp **** 
+ 180:HardwareSerial.cpp **** int HardwareSerial::read(void)
+ 181:HardwareSerial.cpp **** {
+  80               		.loc 1 181 0
+  81               		.cfi_startproc
+  82               	.LVL6:
+  83               	/* prologue: function */
+  84               	/* frame size = 0 */
+  85               	/* stack size = 0 */
+  86               	.L__stack_usage = 0
+  87 0034 FC01      		movw r30,r24
+  88               	.LBB29:
+ 182:HardwareSerial.cpp ****   // if the head isn't ahead of the tail, we don't have any characters
+ 183:HardwareSerial.cpp ****   if (_rx_buffer_head == _rx_buffer_tail) {
+  89               		.loc 1 183 0
+  90 0036 918D      		ldd r25,Z+25
+  91 0038 828D      		ldd r24,Z+26
+  92               	.LVL7:
+  93 003a 9817      		cp r25,r24
+  94 003c 01F0      		breq .L8
+  95               	.LBB30:
+ 184:HardwareSerial.cpp ****     return -1;
+ 185:HardwareSerial.cpp ****   } else {
+ 186:HardwareSerial.cpp ****     unsigned char c = _rx_buffer[_rx_buffer_tail];
+  96               		.loc 1 186 0
+  97 003e 828D      		ldd r24,Z+26
+  98 0040 DF01      		movw r26,r30
+  99 0042 A80F      		add r26,r24
+ 100 0044 B11D      		adc r27,__zero_reg__
+ 101 0046 5D96      		adiw r26,29
+ 102 0048 8C91      		ld r24,X
+ 103               	.LVL8:
+ 187:HardwareSerial.cpp ****     _rx_buffer_tail = (rx_buffer_index_t)(_rx_buffer_tail + 1) % SERIAL_RX_BUFFER_SIZE;
+ 104               		.loc 1 187 0
+ 105 004a 928D      		ldd r25,Z+26
+ 106 004c 9F5F      		subi r25,lo8(-(1))
+ 107 004e 9F73      		andi r25,lo8(63)
+ 108 0050 928F      		std Z+26,r25
+ 188:HardwareSerial.cpp ****     return c;
+ 109               		.loc 1 188 0
+ 110 0052 90E0      		ldi r25,0
+ 111 0054 0895      		ret
+ 112               	.LVL9:
+ 113               	.L8:
+ 114               	.LBE30:
+ 184:HardwareSerial.cpp ****     return -1;
+ 115               		.loc 1 184 0
+ 116 0056 8FEF      		ldi r24,lo8(-1)
+ 117 0058 9FEF      		ldi r25,lo8(-1)
+ 118               	.LBE29:
+ 189:HardwareSerial.cpp ****   }
+ 190:HardwareSerial.cpp **** }
+ 119               		.loc 1 190 0
+ 120 005a 0895      		ret
+ 121               		.cfi_endproc
+ 122               	.LFE123:
+ 124               	.global	_ZN14HardwareSerial17availableForWriteEv
+ 126               	_ZN14HardwareSerial17availableForWriteEv:
+ 127               	.LFB124:
+ 191:HardwareSerial.cpp **** 
+ 192:HardwareSerial.cpp **** int HardwareSerial::availableForWrite(void)
+ 193:HardwareSerial.cpp **** {
+ 128               		.loc 1 193 0
+ 129               		.cfi_startproc
+ 130               	.LVL10:
+ 131               	/* prologue: function */
+ 132               	/* frame size = 0 */
+ 133               	/* stack size = 0 */
+ 134               	.L__stack_usage = 0
+ 135               	.LBB31:
+ 194:HardwareSerial.cpp ****   tx_buffer_index_t head;
+ 195:HardwareSerial.cpp ****   tx_buffer_index_t tail;
+ 196:HardwareSerial.cpp **** 
+ 197:HardwareSerial.cpp ****   TX_BUFFER_ATOMIC {
+ 198:HardwareSerial.cpp ****     head = _tx_buffer_head;
+ 136               		.loc 1 198 0
+ 137 005c FC01      		movw r30,r24
+ 138 005e 538D      		ldd r21,Z+27
+ 139               	.LVL11:
+ 199:HardwareSerial.cpp ****     tail = _tx_buffer_tail;
+ 140               		.loc 1 199 0
+ 141 0060 448D      		ldd r20,Z+28
+ 142               	.LVL12:
+ 143 0062 252F      		mov r18,r21
+ 144 0064 30E0      		ldi r19,0
+ 145 0066 842F      		mov r24,r20
+ 146               	.LVL13:
+ 147 0068 90E0      		ldi r25,0
+ 200:HardwareSerial.cpp ****   }
+ 201:HardwareSerial.cpp ****   if (head >= tail) return SERIAL_TX_BUFFER_SIZE - 1 - head + tail;
+ 148               		.loc 1 201 0
+ 149 006a 821B      		sub r24,r18
+ 150 006c 930B      		sbc r25,r19
+ 151 006e 5417      		cp r21,r20
+ 152 0070 00F0      		brlo .L10
+ 153               		.loc 1 201 0 is_stmt 0 discriminator 1
+ 154 0072 CF96      		adiw r24,63
+ 155 0074 0895      		ret
+ 156               	.L10:
+ 202:HardwareSerial.cpp ****   return tail - head - 1;
+ 157               		.loc 1 202 0 is_stmt 1
+ 158 0076 0197      		sbiw r24,1
+ 159               	.LBE31:
+ 203:HardwareSerial.cpp **** }
+ 160               		.loc 1 203 0
+ 161 0078 0895      		ret
+ 162               		.cfi_endproc
+ 163               	.LFE124:
+ 165               		.weak	_Z14serialEventRunv
+ 167               	_Z14serialEventRunv:
+ 168               	.LFB117:
+  65:HardwareSerial.cpp **** #if defined(HAVE_HWSERIAL0)
+ 169               		.loc 1 65 0
+ 170               		.cfi_startproc
+ 171               	/* prologue: function */
+ 172               	/* frame size = 0 */
+ 173               	/* stack size = 0 */
+ 174               	.L__stack_usage = 0
+  67:HardwareSerial.cpp **** #endif
+ 175               		.loc 1 67 0
+ 176 007a 80E0      		ldi r24,lo8(gs(_Z17Serial0_availablev))
+ 177 007c 90E0      		ldi r25,hi8(gs(_Z17Serial0_availablev))
+ 178 007e 892B      		or r24,r25
+ 179 0080 01F0      		breq .L12
+  67:HardwareSerial.cpp **** #endif
+ 180               		.loc 1 67 0 is_stmt 0 discriminator 1
+ 181 0082 80E0      		ldi r24,lo8(gs(_Z11serialEventv))
+ 182 0084 90E0      		ldi r25,hi8(gs(_Z11serialEventv))
+ 183 0086 892B      		or r24,r25
+ 184 0088 01F0      		breq .L12
+  67:HardwareSerial.cpp **** #endif
+ 185               		.loc 1 67 0 discriminator 3
+ 186 008a 0E94 0000 		call _Z17Serial0_availablev
+ 187               	.LVL14:
+ 188 008e 8111      		cpse r24,__zero_reg__
+  67:HardwareSerial.cpp **** #endif
+ 189               		.loc 1 67 0
+ 190 0090 0C94 0000 		jmp _Z11serialEventv
+ 191               	.LVL15:
+ 192               	.L12:
+ 193 0094 0895      		ret
+ 194               		.cfi_endproc
+ 195               	.LFE117:
+ 197               	.global	_ZN14HardwareSerial17_tx_udr_empty_irqEv
+ 199               	_ZN14HardwareSerial17_tx_udr_empty_irqEv:
+ 200               	.LFB118:
+  90:HardwareSerial.cpp ****   // If interrupts are enabled, there must be more data in the output
+ 201               		.loc 1 90 0 is_stmt 1
+ 202               		.cfi_startproc
+ 203               	.LVL16:
+ 204               	/* prologue: function */
+ 205               	/* frame size = 0 */
+ 206               	/* stack size = 0 */
+ 207               	.L__stack_usage = 0
+ 208 0096 FC01      		movw r30,r24
+ 209               	.LBB36:
+  93:HardwareSerial.cpp ****   _tx_buffer_tail = (_tx_buffer_tail + 1) % SERIAL_TX_BUFFER_SIZE;
+ 210               		.loc 1 93 0
+ 211 0098 848D      		ldd r24,Z+28
+ 212               	.LVL17:
+ 213 009a DF01      		movw r26,r30
+ 214 009c A80F      		add r26,r24
+ 215 009e B11D      		adc r27,__zero_reg__
+ 216 00a0 A35A      		subi r26,-93
+ 217 00a2 BF4F      		sbci r27,-1
+ 218 00a4 2C91      		ld r18,X
+ 219               	.LVL18:
+  94:HardwareSerial.cpp **** 
+ 220               		.loc 1 94 0
+ 221 00a6 848D      		ldd r24,Z+28
+ 222 00a8 90E0      		ldi r25,0
+ 223 00aa 0196      		adiw r24,1
+ 224 00ac 8F73      		andi r24,63
+ 225 00ae 9927      		clr r25
+ 226 00b0 848F      		std Z+28,r24
+  96:HardwareSerial.cpp **** 
+ 227               		.loc 1 96 0
+ 228 00b2 A689      		ldd r26,Z+22
+ 229 00b4 B789      		ldd r27,Z+23
+ 230 00b6 2C93      		st X,r18
+ 106:HardwareSerial.cpp **** #endif
+ 231               		.loc 1 106 0
+ 232 00b8 A089      		ldd r26,Z+16
+ 233 00ba B189      		ldd r27,Z+17
+ 234 00bc 8C91      		ld r24,X
+ 235 00be 8274      		andi r24,lo8(66)
+ 236 00c0 8C93      		st X,r24
+ 109:HardwareSerial.cpp ****     // Buffer empty, so disable interrupts
+ 237               		.loc 1 109 0
+ 238 00c2 938D      		ldd r25,Z+27
+ 239 00c4 848D      		ldd r24,Z+28
+ 240 00c6 9813      		cpse r25,r24
+ 241 00c8 00C0      		rjmp .L22
+ 242               	.LVL19:
+ 243               	.LBE36:
+ 244               	.LBB37:
+ 245               	.LBB38:
+ 111:HardwareSerial.cpp ****   }
+ 246               		.loc 1 111 0
+ 247 00ca 0288      		ldd __tmp_reg__,Z+18
+ 248 00cc F389      		ldd r31,Z+19
+ 249 00ce E02D      		mov r30,__tmp_reg__
+ 250               	.LVL20:
+ 251 00d0 8081      		ld r24,Z
+ 252 00d2 8F7D      		andi r24,lo8(-33)
+ 253 00d4 8083      		st Z,r24
+ 254               	.LVL21:
+ 255               	.L22:
+ 256 00d6 0895      		ret
+ 257               	.LBE38:
+ 258               	.LBE37:
+ 259               		.cfi_endproc
+ 260               	.LFE118:
+ 262               	.global	_ZN14HardwareSerial5flushEv
+ 264               	_ZN14HardwareSerial5flushEv:
+ 265               	.LFB125:
+ 204:HardwareSerial.cpp **** 
+ 205:HardwareSerial.cpp **** void HardwareSerial::flush()
+ 206:HardwareSerial.cpp **** {
+ 266               		.loc 1 206 0
+ 267               		.cfi_startproc
+ 268               	.LVL22:
+ 269 00d8 CF93      		push r28
+ 270               	.LCFI0:
+ 271               		.cfi_def_cfa_offset 3
+ 272               		.cfi_offset 28, -2
+ 273 00da DF93      		push r29
+ 274               	.LCFI1:
+ 275               		.cfi_def_cfa_offset 4
+ 276               		.cfi_offset 29, -3
+ 277               	/* prologue: function */
+ 278               	/* frame size = 0 */
+ 279               	/* stack size = 2 */
+ 280               	.L__stack_usage = 2
+ 281 00dc EC01      		movw r28,r24
+ 207:HardwareSerial.cpp ****   // If we have never written a byte, no need to flush. This special
+ 208:HardwareSerial.cpp ****   // case is needed since there is no way to force the TXC (transmit
+ 209:HardwareSerial.cpp ****   // complete) bit to 1 during initialization
+ 210:HardwareSerial.cpp ****   if (!_written)
+ 282               		.loc 1 210 0
+ 283 00de 888D      		ldd r24,Y+24
+ 284               	.LVL23:
+ 285 00e0 8823      		tst r24
+ 286 00e2 01F0      		breq .L24
+ 287               	.L34:
+ 288               	.LBB41:
+ 289               	.LBB42:
+ 211:HardwareSerial.cpp ****     return;
+ 212:HardwareSerial.cpp **** 
+ 213:HardwareSerial.cpp ****   while (bit_is_set(*_ucsrb, UDRIE0) || bit_is_clear(*_ucsra, TXC0)) {
+ 290               		.loc 1 213 0
+ 291 00e4 EA89      		ldd r30,Y+18
+ 292 00e6 FB89      		ldd r31,Y+19
+ 293               	.L31:
+ 294 00e8 8081      		ld r24,Z
+ 295 00ea 85FD      		sbrc r24,5
+ 296 00ec 00C0      		rjmp .L28
+ 297 00ee A889      		ldd r26,Y+16
+ 298 00f0 B989      		ldd r27,Y+17
+ 299 00f2 8C91      		ld r24,X
+ 300 00f4 86FD      		sbrc r24,6
+ 301 00f6 00C0      		rjmp .L24
+ 302               	.L28:
+ 214:HardwareSerial.cpp ****     if (bit_is_clear(SREG, SREG_I) && bit_is_set(*_ucsrb, UDRIE0))
+ 303               		.loc 1 214 0
+ 304 00f8 0FB6      		in __tmp_reg__,__SREG__
+ 305 00fa 07FC      		sbrc __tmp_reg__,7
+ 306 00fc 00C0      		rjmp .L31
+ 307 00fe 8081      		ld r24,Z
+ 308 0100 85FF      		sbrs r24,5
+ 309 0102 00C0      		rjmp .L31
+ 215:HardwareSerial.cpp **** 	// Interrupts are globally disabled, but the DR empty
+ 216:HardwareSerial.cpp **** 	// interrupt should be enabled, so poll the DR empty flag to
+ 217:HardwareSerial.cpp **** 	// prevent deadlock
+ 218:HardwareSerial.cpp **** 	if (bit_is_set(*_ucsra, UDRE0))
+ 310               		.loc 1 218 0
+ 311 0104 A889      		ldd r26,Y+16
+ 312 0106 B989      		ldd r27,Y+17
+ 313 0108 8C91      		ld r24,X
+ 314 010a 85FF      		sbrs r24,5
+ 315 010c 00C0      		rjmp .L31
+ 219:HardwareSerial.cpp **** 	  _tx_udr_empty_irq();
+ 316               		.loc 1 219 0
+ 317 010e CE01      		movw r24,r28
+ 318 0110 0E94 0000 		call _ZN14HardwareSerial17_tx_udr_empty_irqEv
+ 319               	.LVL24:
+ 320 0114 00C0      		rjmp .L34
+ 321               	.L24:
+ 322               	/* epilogue start */
+ 323               	.LBE42:
+ 324               	.LBE41:
+ 220:HardwareSerial.cpp ****   }
+ 221:HardwareSerial.cpp ****   // If we get here, nothing is queued anymore (DRIE is disabled) and
+ 222:HardwareSerial.cpp ****   // the hardware finished tranmission (TXC is set).
+ 223:HardwareSerial.cpp **** }
+ 325               		.loc 1 223 0
+ 326 0116 DF91      		pop r29
+ 327 0118 CF91      		pop r28
+ 328               	.LVL25:
+ 329 011a 0895      		ret
+ 330               		.cfi_endproc
+ 331               	.LFE125:
+ 333               	.global	_ZN14HardwareSerial5writeEh
+ 335               	_ZN14HardwareSerial5writeEh:
+ 336               	.LFB126:
+ 224:HardwareSerial.cpp **** 
+ 225:HardwareSerial.cpp **** size_t HardwareSerial::write(uint8_t c)
+ 226:HardwareSerial.cpp **** {
+ 337               		.loc 1 226 0
+ 338               		.cfi_startproc
+ 339               	.LVL26:
+ 340 011c EF92      		push r14
+ 341               	.LCFI2:
+ 342               		.cfi_def_cfa_offset 3
+ 343               		.cfi_offset 14, -2
+ 344 011e FF92      		push r15
+ 345               	.LCFI3:
+ 346               		.cfi_def_cfa_offset 4
+ 347               		.cfi_offset 15, -3
+ 348 0120 0F93      		push r16
+ 349               	.LCFI4:
+ 350               		.cfi_def_cfa_offset 5
+ 351               		.cfi_offset 16, -4
+ 352 0122 1F93      		push r17
+ 353               	.LCFI5:
+ 354               		.cfi_def_cfa_offset 6
+ 355               		.cfi_offset 17, -5
+ 356 0124 CF93      		push r28
+ 357               	.LCFI6:
+ 358               		.cfi_def_cfa_offset 7
+ 359               		.cfi_offset 28, -6
+ 360 0126 DF93      		push r29
+ 361               	.LCFI7:
+ 362               		.cfi_def_cfa_offset 8
+ 363               		.cfi_offset 29, -7
+ 364               	/* prologue: function */
+ 365               	/* frame size = 0 */
+ 366               	/* stack size = 6 */
+ 367               	.L__stack_usage = 6
+ 368 0128 EC01      		movw r28,r24
+ 369               	.LBB66:
+ 227:HardwareSerial.cpp ****   _written = true;
+ 370               		.loc 1 227 0
+ 371 012a 81E0      		ldi r24,lo8(1)
+ 372               	.LVL27:
+ 373 012c 888F      		std Y+24,r24
+ 374               	.LBB67:
+ 228:HardwareSerial.cpp ****   // If the buffer and the data register is empty, just write the byte
+ 229:HardwareSerial.cpp ****   // to the data register and be done. This shortcut helps
+ 230:HardwareSerial.cpp ****   // significantly improve the effective datarate at high (>
+ 231:HardwareSerial.cpp ****   // 500kbit/s) bitrates, where interrupt overhead becomes a slowdown.
+ 232:HardwareSerial.cpp ****   if (_tx_buffer_head == _tx_buffer_tail && bit_is_set(*_ucsra, UDRE0)) {
+ 375               		.loc 1 232 0
+ 376 012e 9B8D      		ldd r25,Y+27
+ 377 0130 8C8D      		ldd r24,Y+28
+ 378 0132 9813      		cpse r25,r24
+ 379 0134 00C0      		rjmp .L38
+ 380               		.loc 1 232 0 is_stmt 0 discriminator 1
+ 381 0136 E889      		ldd r30,Y+16
+ 382 0138 F989      		ldd r31,Y+17
+ 383 013a 8081      		ld r24,Z
+ 384 013c 85FD      		sbrc r24,5
+ 385 013e 00C0      		rjmp .L39
+ 386               	.L38:
+ 387 0140 F62E      		mov r15,r22
+ 388               	.LVL28:
+ 389               	.LBE67:
+ 390               	.LBE66:
+ 391               	.LBB75:
+ 392               	.LBB76:
+ 233:HardwareSerial.cpp ****     // If TXC is cleared before writing UDR and the previous byte
+ 234:HardwareSerial.cpp ****     // completes before writing to UDR, TXC will be set but a byte
+ 235:HardwareSerial.cpp ****     // is still being transmitted causing flush() to return too soon.
+ 236:HardwareSerial.cpp ****     // So writing UDR must happen first.
+ 237:HardwareSerial.cpp ****     // Writing UDR and clearing TC must be done atomically, otherwise
+ 238:HardwareSerial.cpp ****     // interrupts might delay the TXC clear so the byte written to UDR
+ 239:HardwareSerial.cpp ****     // is transmitted (setting TXC) before clearing TXC. Then TXC will
+ 240:HardwareSerial.cpp ****     // be cleared when no bytes are left, causing flush() to hang
+ 241:HardwareSerial.cpp ****     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+ 242:HardwareSerial.cpp ****       *_udr = c;
+ 243:HardwareSerial.cpp **** #ifdef MPCM0
+ 244:HardwareSerial.cpp ****       *_ucsra = ((*_ucsra) & ((1 << U2X0) | (1 << MPCM0))) | (1 << TXC0);
+ 245:HardwareSerial.cpp **** #else
+ 246:HardwareSerial.cpp ****       *_ucsra = ((*_ucsra) & ((1 << U2X0) | (1 << TXC0)));
+ 247:HardwareSerial.cpp **** #endif
+ 248:HardwareSerial.cpp ****     }
+ 249:HardwareSerial.cpp ****     return 1;
+ 250:HardwareSerial.cpp ****   }
+ 251:HardwareSerial.cpp ****   tx_buffer_index_t i = (_tx_buffer_head + 1) % SERIAL_TX_BUFFER_SIZE;
+ 393               		.loc 1 251 0 is_stmt 1
+ 394 0142 0B8D      		ldd r16,Y+27
+ 395 0144 10E0      		ldi r17,0
+ 396 0146 0F5F      		subi r16,-1
+ 397 0148 1F4F      		sbci r17,-1
+ 398 014a 0F73      		andi r16,63
+ 399 014c 1127      		clr r17
+ 400 014e E02E      		mov r14,r16
+ 401               	.LVL29:
+ 402               	.L40:
+ 252:HardwareSerial.cpp **** 	
+ 253:HardwareSerial.cpp ****   // If the output buffer is full, there's nothing for it other than to 
+ 254:HardwareSerial.cpp ****   // wait for the interrupt handler to empty it a bit
+ 255:HardwareSerial.cpp ****   while (i == _tx_buffer_tail) {
+ 403               		.loc 1 255 0
+ 404 0150 8C8D      		ldd r24,Y+28
+ 405 0152 E812      		cpse r14,r24
+ 406 0154 00C0      		rjmp .L50
+ 256:HardwareSerial.cpp ****     if (bit_is_clear(SREG, SREG_I)) {
+ 407               		.loc 1 256 0
+ 408 0156 0FB6      		in __tmp_reg__,__SREG__
+ 409 0158 07FC      		sbrc __tmp_reg__,7
+ 410 015a 00C0      		rjmp .L40
+ 257:HardwareSerial.cpp ****       // Interrupts are disabled, so we'll have to poll the data
+ 258:HardwareSerial.cpp ****       // register empty flag ourselves. If it is set, pretend an
+ 259:HardwareSerial.cpp ****       // interrupt has happened and call the handler to free up
+ 260:HardwareSerial.cpp ****       // space for us.
+ 261:HardwareSerial.cpp ****       if(bit_is_set(*_ucsra, UDRE0))
+ 411               		.loc 1 261 0
+ 412 015c E889      		ldd r30,Y+16
+ 413 015e F989      		ldd r31,Y+17
+ 414 0160 8081      		ld r24,Z
+ 415 0162 85FF      		sbrs r24,5
+ 416 0164 00C0      		rjmp .L40
+ 262:HardwareSerial.cpp **** 	_tx_udr_empty_irq();
+ 417               		.loc 1 262 0
+ 418 0166 CE01      		movw r24,r28
+ 419 0168 0E94 0000 		call _ZN14HardwareSerial17_tx_udr_empty_irqEv
+ 420               	.LVL30:
+ 421 016c 00C0      		rjmp .L40
+ 422               	.L50:
+ 263:HardwareSerial.cpp ****     } else {
+ 264:HardwareSerial.cpp ****       // nop, the interrupt handler will free up space for us
+ 265:HardwareSerial.cpp ****     }
+ 266:HardwareSerial.cpp ****   }
+ 267:HardwareSerial.cpp **** 
+ 268:HardwareSerial.cpp ****   _tx_buffer[_tx_buffer_head] = c;
+ 423               		.loc 1 268 0
+ 424 016e 8B8D      		ldd r24,Y+27
+ 425 0170 FE01      		movw r30,r28
+ 426 0172 E80F      		add r30,r24
+ 427 0174 F11D      		adc r31,__zero_reg__
+ 428 0176 E35A      		subi r30,-93
+ 429 0178 FF4F      		sbci r31,-1
+ 430 017a F082      		st Z,r15
+ 431               	.LBB77:
+ 269:HardwareSerial.cpp **** 
+ 270:HardwareSerial.cpp ****   // make atomic to prevent execution of ISR between setting the
+ 271:HardwareSerial.cpp ****   // head pointer and setting the interrupt flag resulting in buffer
+ 272:HardwareSerial.cpp ****   // retransmission
+ 273:HardwareSerial.cpp ****   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+ 432               		.loc 1 273 0
+ 433 017c 9FB7      		in r25,__SREG__
+ 434               	.LVL31:
+ 435               	.LBB78:
+ 436               	.LBB79:
+ 437               		.file 2 "/usr/lib/avr/include/util/atomic.h"
+   1:/usr/lib/avr/include/util/atomic.h **** /* Copyright (c) 2007 Dean Camera
+   2:/usr/lib/avr/include/util/atomic.h ****    All rights reserved.
+   3:/usr/lib/avr/include/util/atomic.h **** 
+   4:/usr/lib/avr/include/util/atomic.h ****    Redistribution and use in source and binary forms, with or without
+   5:/usr/lib/avr/include/util/atomic.h ****    modification, are permitted provided that the following conditions are met:
+   6:/usr/lib/avr/include/util/atomic.h **** 
+   7:/usr/lib/avr/include/util/atomic.h ****    * Redistributions of source code must retain the above copyright
+   8:/usr/lib/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer.
+   9:/usr/lib/avr/include/util/atomic.h **** 
+  10:/usr/lib/avr/include/util/atomic.h ****    * Redistributions in binary form must reproduce the above copyright
+  11:/usr/lib/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer in
+  12:/usr/lib/avr/include/util/atomic.h ****      the documentation and/or other materials provided with the
+  13:/usr/lib/avr/include/util/atomic.h ****      distribution.
+  14:/usr/lib/avr/include/util/atomic.h **** 
+  15:/usr/lib/avr/include/util/atomic.h ****    * Neither the name of the copyright holders nor the names of
+  16:/usr/lib/avr/include/util/atomic.h ****      contributors may be used to endorse or promote products derived
+  17:/usr/lib/avr/include/util/atomic.h ****      from this software without specific prior written permission.
+  18:/usr/lib/avr/include/util/atomic.h **** 
+  19:/usr/lib/avr/include/util/atomic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  20:/usr/lib/avr/include/util/atomic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  21:/usr/lib/avr/include/util/atomic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  22:/usr/lib/avr/include/util/atomic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  23:/usr/lib/avr/include/util/atomic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  24:/usr/lib/avr/include/util/atomic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  25:/usr/lib/avr/include/util/atomic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  26:/usr/lib/avr/include/util/atomic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  27:/usr/lib/avr/include/util/atomic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  28:/usr/lib/avr/include/util/atomic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  29:/usr/lib/avr/include/util/atomic.h ****   POSSIBILITY OF SUCH DAMAGE.
+  30:/usr/lib/avr/include/util/atomic.h **** */
+  31:/usr/lib/avr/include/util/atomic.h **** 
+  32:/usr/lib/avr/include/util/atomic.h **** /* $Id$ */
+  33:/usr/lib/avr/include/util/atomic.h **** 
+  34:/usr/lib/avr/include/util/atomic.h **** #ifndef _UTIL_ATOMIC_H_
+  35:/usr/lib/avr/include/util/atomic.h **** #define _UTIL_ATOMIC_H_ 1
+  36:/usr/lib/avr/include/util/atomic.h **** 
+  37:/usr/lib/avr/include/util/atomic.h **** #include <avr/io.h>
+  38:/usr/lib/avr/include/util/atomic.h **** #include <avr/interrupt.h>
+  39:/usr/lib/avr/include/util/atomic.h **** 
+  40:/usr/lib/avr/include/util/atomic.h **** #if !defined(__DOXYGEN__)
+  41:/usr/lib/avr/include/util/atomic.h **** /* Internal helper functions. */
+  42:/usr/lib/avr/include/util/atomic.h **** static __inline__ uint8_t __iSeiRetVal(void)
+  43:/usr/lib/avr/include/util/atomic.h **** {
+  44:/usr/lib/avr/include/util/atomic.h ****     sei();
+  45:/usr/lib/avr/include/util/atomic.h ****     return 1;
+  46:/usr/lib/avr/include/util/atomic.h **** }
+  47:/usr/lib/avr/include/util/atomic.h **** 
+  48:/usr/lib/avr/include/util/atomic.h **** static __inline__ uint8_t __iCliRetVal(void)
+  49:/usr/lib/avr/include/util/atomic.h **** {
+  50:/usr/lib/avr/include/util/atomic.h ****     cli();
+ 438               		.loc 2 50 0
+ 439               	/* #APP */
+ 440               	 ;  50 "/usr/lib/avr/include/util/atomic.h" 1
+ 441 017e F894      		cli
+ 442               	 ;  0 "" 2
+ 443               	.LVL32:
+ 444               	/* #NOAPP */
+ 445               	.LBE79:
+ 446               	.LBE78:
+ 274:HardwareSerial.cpp ****     _tx_buffer_head = i;
+ 447               		.loc 1 274 0
+ 448 0180 0B8F      		std Y+27,r16
+ 275:HardwareSerial.cpp ****     sbi(*_ucsrb, UDRIE0);
+ 449               		.loc 1 275 0
+ 450 0182 EA89      		ldd r30,Y+18
+ 451 0184 FB89      		ldd r31,Y+19
+ 452 0186 8081      		ld r24,Z
+ 453 0188 8062      		ori r24,lo8(32)
+ 454 018a 00C0      		rjmp .L49
+ 455               	.LVL33:
+ 456               	.L39:
+ 457               	.LBE77:
+ 458               	.LBE76:
+ 459               	.LBE75:
+ 460               	.LBB80:
+ 461               	.LBB74:
+ 462               	.LBB68:
+ 463               	.LBB69:
+ 241:HardwareSerial.cpp ****       *_udr = c;
+ 464               		.loc 1 241 0
+ 465 018c 9FB7      		in r25,__SREG__
+ 466               	.LVL34:
+ 467               	.LBB70:
+ 468               	.LBB71:
+ 469               		.loc 2 50 0
+ 470               	/* #APP */
+ 471               	 ;  50 "/usr/lib/avr/include/util/atomic.h" 1
+ 472 018e F894      		cli
+ 473               	 ;  0 "" 2
+ 474               	.LVL35:
+ 475               	/* #NOAPP */
+ 476               	.LBE71:
+ 477               	.LBE70:
+ 242:HardwareSerial.cpp **** #ifdef MPCM0
+ 478               		.loc 1 242 0
+ 479 0190 EE89      		ldd r30,Y+22
+ 480 0192 FF89      		ldd r31,Y+23
+ 481 0194 6083      		st Z,r22
+ 246:HardwareSerial.cpp **** #endif
+ 482               		.loc 1 246 0
+ 483 0196 E889      		ldd r30,Y+16
+ 484 0198 F989      		ldd r31,Y+17
+ 485 019a 8081      		ld r24,Z
+ 486 019c 8274      		andi r24,lo8(66)
+ 487               	.LVL36:
+ 488               	.L49:
+ 489 019e 8083      		st Z,r24
+ 490               	.LVL37:
+ 491               	.LBB72:
+ 492               	.LBB73:
+  51:/usr/lib/avr/include/util/atomic.h ****     return 1;
+  52:/usr/lib/avr/include/util/atomic.h **** }
+  53:/usr/lib/avr/include/util/atomic.h **** 
+  54:/usr/lib/avr/include/util/atomic.h **** static __inline__ void __iSeiParam(const uint8_t *__s)
+  55:/usr/lib/avr/include/util/atomic.h **** {
+  56:/usr/lib/avr/include/util/atomic.h ****     sei();
+  57:/usr/lib/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+  58:/usr/lib/avr/include/util/atomic.h ****     (void)__s;
+  59:/usr/lib/avr/include/util/atomic.h **** }
+  60:/usr/lib/avr/include/util/atomic.h **** 
+  61:/usr/lib/avr/include/util/atomic.h **** static __inline__ void __iCliParam(const uint8_t *__s)
+  62:/usr/lib/avr/include/util/atomic.h **** {
+  63:/usr/lib/avr/include/util/atomic.h ****     cli();
+  64:/usr/lib/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+  65:/usr/lib/avr/include/util/atomic.h ****     (void)__s;
+  66:/usr/lib/avr/include/util/atomic.h **** }
+  67:/usr/lib/avr/include/util/atomic.h **** 
+  68:/usr/lib/avr/include/util/atomic.h **** static __inline__ void __iRestore(const  uint8_t *__s)
+  69:/usr/lib/avr/include/util/atomic.h **** {
+  70:/usr/lib/avr/include/util/atomic.h ****     SREG = *__s;
+ 493               		.loc 2 70 0
+ 494 01a0 9FBF      		out __SREG__,r25
+  71:/usr/lib/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+ 495               		.loc 2 71 0
+ 496               	.LBE73:
+ 497               	.LBE72:
+ 498               	.LBE69:
+ 499               	.LBE68:
+ 500               	.LBE74:
+ 501               	.LBE80:
+ 276:HardwareSerial.cpp ****   }
+ 277:HardwareSerial.cpp ****   
+ 278:HardwareSerial.cpp ****   return 1;
+ 279:HardwareSerial.cpp **** }
+ 502               		.loc 1 279 0
+ 503 01a2 81E0      		ldi r24,lo8(1)
+ 504 01a4 90E0      		ldi r25,0
+ 505               	/* epilogue start */
+ 506 01a6 DF91      		pop r29
+ 507 01a8 CF91      		pop r28
+ 508               	.LVL38:
+ 509 01aa 1F91      		pop r17
+ 510 01ac 0F91      		pop r16
+ 511 01ae FF90      		pop r15
+ 512 01b0 EF90      		pop r14
+ 513 01b2 0895      		ret
+ 514               		.cfi_endproc
+ 515               	.LFE126:
+ 517               	.global	_ZN14HardwareSerial5beginEmh
+ 519               	_ZN14HardwareSerial5beginEmh:
+ 520               	.LFB119:
+ 118:HardwareSerial.cpp ****   // Try u2x mode first
+ 521               		.loc 1 118 0
+ 522               		.cfi_startproc
+ 523               	.LVL39:
+ 524 01b4 CF92      		push r12
+ 525               	.LCFI8:
+ 526               		.cfi_def_cfa_offset 3
+ 527               		.cfi_offset 12, -2
+ 528 01b6 DF92      		push r13
+ 529               	.LCFI9:
+ 530               		.cfi_def_cfa_offset 4
+ 531               		.cfi_offset 13, -3
+ 532 01b8 EF92      		push r14
+ 533               	.LCFI10:
+ 534               		.cfi_def_cfa_offset 5
+ 535               		.cfi_offset 14, -4
+ 536 01ba FF92      		push r15
+ 537               	.LCFI11:
+ 538               		.cfi_def_cfa_offset 6
+ 539               		.cfi_offset 15, -5
+ 540 01bc 1F93      		push r17
+ 541               	.LCFI12:
+ 542               		.cfi_def_cfa_offset 7
+ 543               		.cfi_offset 17, -6
+ 544 01be CF93      		push r28
+ 545               	.LCFI13:
+ 546               		.cfi_def_cfa_offset 8
+ 547               		.cfi_offset 28, -7
+ 548 01c0 DF93      		push r29
+ 549               	.LCFI14:
+ 550               		.cfi_def_cfa_offset 9
+ 551               		.cfi_offset 29, -8
+ 552               	/* prologue: function */
+ 553               	/* frame size = 0 */
+ 554               	/* stack size = 7 */
+ 555               	.L__stack_usage = 7
+ 556 01c2 EC01      		movw r28,r24
+ 557 01c4 6A01      		movw r12,r20
+ 558 01c6 7B01      		movw r14,r22
+ 559 01c8 122F      		mov r17,r18
+ 560               	.LVL40:
+ 561               	.LBB81:
+ 121:HardwareSerial.cpp **** 
+ 562               		.loc 1 121 0
+ 563 01ca E889      		ldd r30,Y+16
+ 564 01cc F989      		ldd r31,Y+17
+ 565 01ce 82E0      		ldi r24,lo8(2)
+ 566               	.LVL41:
+ 567 01d0 8083      		st Z,r24
+ 128:HardwareSerial.cpp ****   {
+ 568               		.loc 1 128 0
+ 569 01d2 4115      		cp r20,__zero_reg__
+ 570 01d4 514E      		sbci r21,-31
+ 571 01d6 6105      		cpc r22,__zero_reg__
+ 572 01d8 7105      		cpc r23,__zero_reg__
+ 573 01da 01F0      		breq .L52
+ 120:HardwareSerial.cpp ****   *_ucsra = 1 << U2X0;
+ 574               		.loc 1 120 0 discriminator 1
+ 575 01dc 60E0      		ldi r22,0
+ 576 01de 79E0      		ldi r23,lo8(9)
+ 577 01e0 8DE3      		ldi r24,lo8(61)
+ 578 01e2 90E0      		ldi r25,0
+ 579 01e4 A701      		movw r20,r14
+ 580 01e6 9601      		movw r18,r12
+ 581               	.LVL42:
+ 582 01e8 0E94 0000 		call __udivmodsi4
+ 583               	.LVL43:
+ 584 01ec DA01      		movw r26,r20
+ 585 01ee C901      		movw r24,r18
+ 586 01f0 0197      		sbiw r24,1
+ 587 01f2 A109      		sbc r26,__zero_reg__
+ 588 01f4 B109      		sbc r27,__zero_reg__
+ 589 01f6 B695      		lsr r27
+ 590 01f8 A795      		ror r26
+ 591 01fa 9795      		ror r25
+ 592 01fc 8795      		ror r24
+ 593               	.LVL44:
+ 594 01fe AC01      		movw r20,r24
+ 595               	.LVL45:
+ 128:HardwareSerial.cpp ****   {
+ 596               		.loc 1 128 0 discriminator 1
+ 597 0200 4115      		cp r20,__zero_reg__
+ 598 0202 80E1      		ldi r24,16
+ 599 0204 5807      		cpc r21,r24
+ 600 0206 00F0      		brlo .L53
+ 601               	.L52:
+ 130:HardwareSerial.cpp ****     baud_setting = (F_CPU / 8 / baud - 1) / 2;
+ 602               		.loc 1 130 0
+ 603 0208 E889      		ldd r30,Y+16
+ 604 020a F989      		ldd r31,Y+17
+ 605 020c 1082      		st Z,__zero_reg__
+ 131:HardwareSerial.cpp ****   }
+ 606               		.loc 1 131 0
+ 607 020e 60E8      		ldi r22,lo8(-128)
+ 608 0210 74E8      		ldi r23,lo8(-124)
+ 609 0212 8EE1      		ldi r24,lo8(30)
+ 610 0214 90E0      		ldi r25,0
+ 611 0216 A701      		movw r20,r14
+ 612 0218 9601      		movw r18,r12
+ 613 021a 0E94 0000 		call __udivmodsi4
+ 614 021e BA01      		movw r22,r20
+ 615 0220 A901      		movw r20,r18
+ 616 0222 4150      		subi r20,1
+ 617 0224 5109      		sbc r21,__zero_reg__
+ 618 0226 6109      		sbc r22,__zero_reg__
+ 619 0228 7109      		sbc r23,__zero_reg__
+ 620 022a 7695      		lsr r23
+ 621 022c 6795      		ror r22
+ 622 022e 5795      		ror r21
+ 623 0230 4795      		ror r20
+ 624               	.LVL46:
+ 625               	.L53:
+ 135:HardwareSerial.cpp ****   *_ubrrl = baud_setting;
+ 626               		.loc 1 135 0
+ 627 0232 EC85      		ldd r30,Y+12
+ 628 0234 FD85      		ldd r31,Y+13
+ 629 0236 5083      		st Z,r21
+ 136:HardwareSerial.cpp **** 
+ 630               		.loc 1 136 0
+ 631 0238 EE85      		ldd r30,Y+14
+ 632 023a FF85      		ldd r31,Y+15
+ 633 023c 4083      		st Z,r20
+ 138:HardwareSerial.cpp **** 
+ 634               		.loc 1 138 0
+ 635 023e 188E      		std Y+24,__zero_reg__
+ 144:HardwareSerial.cpp ****   
+ 636               		.loc 1 144 0
+ 637 0240 EC89      		ldd r30,Y+20
+ 638 0242 FD89      		ldd r31,Y+21
+ 639 0244 1083      		st Z,r17
+ 146:HardwareSerial.cpp ****   sbi(*_ucsrb, TXEN0);
+ 640               		.loc 1 146 0
+ 641 0246 EA89      		ldd r30,Y+18
+ 642 0248 FB89      		ldd r31,Y+19
+ 643 024a 8081      		ld r24,Z
+ 644 024c 8061      		ori r24,lo8(16)
+ 645 024e 8083      		st Z,r24
+ 147:HardwareSerial.cpp ****   sbi(*_ucsrb, RXCIE0);
+ 646               		.loc 1 147 0
+ 647 0250 EA89      		ldd r30,Y+18
+ 648 0252 FB89      		ldd r31,Y+19
+ 649 0254 8081      		ld r24,Z
+ 650 0256 8860      		ori r24,lo8(8)
+ 651 0258 8083      		st Z,r24
+ 148:HardwareSerial.cpp ****   cbi(*_ucsrb, UDRIE0);
+ 652               		.loc 1 148 0
+ 653 025a EA89      		ldd r30,Y+18
+ 654 025c FB89      		ldd r31,Y+19
+ 655 025e 8081      		ld r24,Z
+ 656 0260 8068      		ori r24,lo8(-128)
+ 657 0262 8083      		st Z,r24
+ 149:HardwareSerial.cpp **** }
+ 658               		.loc 1 149 0
+ 659 0264 EA89      		ldd r30,Y+18
+ 660 0266 FB89      		ldd r31,Y+19
+ 661 0268 8081      		ld r24,Z
+ 662 026a 8F7D      		andi r24,lo8(-33)
+ 663 026c 8083      		st Z,r24
+ 664               	/* epilogue start */
+ 665               	.LBE81:
+ 150:HardwareSerial.cpp **** 
+ 666               		.loc 1 150 0
+ 667 026e DF91      		pop r29
+ 668 0270 CF91      		pop r28
+ 669               	.LVL47:
+ 670 0272 1F91      		pop r17
+ 671               	.LVL48:
+ 672 0274 FF90      		pop r15
+ 673 0276 EF90      		pop r14
+ 674 0278 DF90      		pop r13
+ 675 027a CF90      		pop r12
+ 676               	.LVL49:
+ 677 027c 0895      		ret
+ 678               		.cfi_endproc
+ 679               	.LFE119:
+ 681               	.global	_ZN14HardwareSerial3endEv
+ 683               	_ZN14HardwareSerial3endEv:
+ 684               	.LFB120:
+ 153:HardwareSerial.cpp ****   // wait for transmission of outgoing data
+ 685               		.loc 1 153 0
+ 686               		.cfi_startproc
+ 687               	.LVL50:
+ 688 027e CF93      		push r28
+ 689               	.LCFI15:
+ 690               		.cfi_def_cfa_offset 3
+ 691               		.cfi_offset 28, -2
+ 692 0280 DF93      		push r29
+ 693               	.LCFI16:
+ 694               		.cfi_def_cfa_offset 4
+ 695               		.cfi_offset 29, -3
+ 696               	/* prologue: function */
+ 697               	/* frame size = 0 */
+ 698               	/* stack size = 2 */
+ 699               	.L__stack_usage = 2
+ 700 0282 EC01      		movw r28,r24
+ 155:HardwareSerial.cpp **** 
+ 701               		.loc 1 155 0
+ 702 0284 E881      		ld r30,Y
+ 703 0286 F981      		ldd r31,Y+1
+ 704 0288 0680      		ldd __tmp_reg__,Z+6
+ 705 028a F781      		ldd r31,Z+7
+ 706 028c E02D      		mov r30,__tmp_reg__
+ 707 028e 0995      		icall
+ 708               	.LVL51:
+ 157:HardwareSerial.cpp ****   cbi(*_ucsrb, TXEN0);
+ 709               		.loc 1 157 0
+ 710 0290 EA89      		ldd r30,Y+18
+ 711 0292 FB89      		ldd r31,Y+19
+ 712 0294 8081      		ld r24,Z
+ 713 0296 8F7E      		andi r24,lo8(-17)
+ 714 0298 8083      		st Z,r24
+ 158:HardwareSerial.cpp ****   cbi(*_ucsrb, RXCIE0);
+ 715               		.loc 1 158 0
+ 716 029a EA89      		ldd r30,Y+18
+ 717 029c FB89      		ldd r31,Y+19
+ 718 029e 8081      		ld r24,Z
+ 719 02a0 877F      		andi r24,lo8(-9)
+ 720 02a2 8083      		st Z,r24
+ 159:HardwareSerial.cpp ****   cbi(*_ucsrb, UDRIE0);
+ 721               		.loc 1 159 0
+ 722 02a4 EA89      		ldd r30,Y+18
+ 723 02a6 FB89      		ldd r31,Y+19
+ 724 02a8 8081      		ld r24,Z
+ 725 02aa 8F77      		andi r24,lo8(127)
+ 726 02ac 8083      		st Z,r24
+ 160:HardwareSerial.cpp ****   
+ 727               		.loc 1 160 0
+ 728 02ae EA89      		ldd r30,Y+18
+ 729 02b0 FB89      		ldd r31,Y+19
+ 730 02b2 8081      		ld r24,Z
+ 731 02b4 8F7D      		andi r24,lo8(-33)
+ 732 02b6 8083      		st Z,r24
+ 163:HardwareSerial.cpp **** }
+ 733               		.loc 1 163 0
+ 734 02b8 8A8D      		ldd r24,Y+26
+ 735 02ba 898F      		std Y+25,r24
+ 736               	/* epilogue start */
+ 164:HardwareSerial.cpp **** 
+ 737               		.loc 1 164 0
+ 738 02bc DF91      		pop r29
+ 739 02be CF91      		pop r28
+ 740               	.LVL52:
+ 741 02c0 0895      		ret
+ 742               		.cfi_endproc
+ 743               	.LFE120:
+ 745               		.weak	_ZTV14HardwareSerial
+ 746               		.section	.rodata._ZTV14HardwareSerial,"aG",@progbits,_ZTV14HardwareSerial,comdat
+ 749               	_ZTV14HardwareSerial:
+ 750 0000 0000      		.word	0
+ 751 0002 0000      		.word	0
+ 752 0004 0000      		.word	gs(_ZN14HardwareSerial5writeEh)
+ 753 0006 0000      		.word	gs(_ZN5Print5writeEPKhj)
+ 754 0008 0000      		.word	gs(_ZN14HardwareSerial17availableForWriteEv)
+ 755 000a 0000      		.word	gs(_ZN14HardwareSerial5flushEv)
+ 756 000c 0000      		.word	gs(_ZN14HardwareSerial9availableEv)
+ 757 000e 0000      		.word	gs(_ZN14HardwareSerial4readEv)
+ 758 0010 0000      		.word	gs(_ZN14HardwareSerial4peekEv)
+ 759               		.weak	_Z11serialEventv
+ 760               		.weak	_Z17Serial0_availablev
+ 761               		.text
+ 762               	.Letext0:
+ 763               		.file 3 "/usr/lib/gcc/avr/4.9.2/include/stddef.h"
+ 764               		.file 4 "/usr/lib/avr/include/stdint.h"
+ 765               		.file 5 "WString.h"
+ 766               		.file 6 "Stream.h"
+ 767               		.file 7 "HardwareSerial.h"
+ 768               		.file 8 "HardwareSerial_private.h"
+ 769               		.file 9 "Print.h"
+ 770               		.file 10 "Arduino.h"
+ 771               		.file 11 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 HardwareSerial.cpp
+     /tmp/ccPNmuT3.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccPNmuT3.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccPNmuT3.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccPNmuT3.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccPNmuT3.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccPNmuT3.s:12     .text:0000000000000000 _ZN14HardwareSerial9availableEv
+     /tmp/ccPNmuT3.s:42     .text:0000000000000018 _ZN14HardwareSerial4peekEv
+     /tmp/ccPNmuT3.s:78     .text:0000000000000034 _ZN14HardwareSerial4readEv
+     /tmp/ccPNmuT3.s:126    .text:000000000000005c _ZN14HardwareSerial17availableForWriteEv
+     /tmp/ccPNmuT3.s:167    .text:000000000000007a _Z14serialEventRunv
+     /tmp/ccPNmuT3.s:199    .text:0000000000000096 _ZN14HardwareSerial17_tx_udr_empty_irqEv
+     /tmp/ccPNmuT3.s:264    .text:00000000000000d8 _ZN14HardwareSerial5flushEv
+     /tmp/ccPNmuT3.s:335    .text:000000000000011c _ZN14HardwareSerial5writeEh
+     /tmp/ccPNmuT3.s:519    .text:00000000000001b4 _ZN14HardwareSerial5beginEmh
+     /tmp/ccPNmuT3.s:683    .text:000000000000027e _ZN14HardwareSerial3endEv
+     /tmp/ccPNmuT3.s:749    .rodata._ZTV14HardwareSerial:0000000000000000 _ZTV14HardwareSerial
+
+UNDEFINED SYMBOLS
+_Z17Serial0_availablev
+_Z11serialEventv
+__udivmodsi4
+_ZN5Print5writeEPKhj
+__do_copy_data

@@ -1,0 +1,5 @@
+define reset
+SIGNAL SIGHUP
+end
+file bin/spi_lib_test.elf
+target remote localhost:4242

@@ -1,0 +1,26 @@
+Outputs "Press button" on LCD and waits for button press event, in case of event clear LCD and display button number.
+
+Connection details:
+LCD:
+	PB0 -> LCD_RS
+	PB1 -> LCD_RW
+	PB2 -> LCD_E
+	
+	PA0 -> LCD_D4
+	PA1 -> LCD_D5
+	PA2 -> LCD_D6
+	PA3 -> LCD_D7
+BUTTONS:
+	PD0 -> COL3
+	PD1 -> COL2
+	PD2 -> COL1
+	PD3 -> ROW1
+	PD4 -> ROW2
+	PD5 -> ROW3
+	PD6 -> ROW4
+
+	COL1	COL2	COL3
+ROW1	1	2	3
+ROW2	4	5	6
+ROW3	7	8	9
+ROW4	A	B	C

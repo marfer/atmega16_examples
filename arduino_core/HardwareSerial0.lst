@@ -1,0 +1,730 @@
+   1               		.file	"HardwareSerial0.cpp"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text._ZN5Print17availableForWriteEv,"axG",@progbits,_ZN5Print17availableForWriteEv,comda
+  11               		.weak	_ZN5Print17availableForWriteEv
+  13               	_ZN5Print17availableForWriteEv:
+  14               	.LFB87:
+  15               		.file 1 "Print.h"
+   1:Print.h       **** /*
+   2:Print.h       ****   Print.h - Base class that provides print() and println()
+   3:Print.h       ****   Copyright (c) 2008 David A. Mellis.  All right reserved.
+   4:Print.h       **** 
+   5:Print.h       ****   This library is free software; you can redistribute it and/or
+   6:Print.h       ****   modify it under the terms of the GNU Lesser General Public
+   7:Print.h       ****   License as published by the Free Software Foundation; either
+   8:Print.h       ****   version 2.1 of the License, or (at your option) any later version.
+   9:Print.h       **** 
+  10:Print.h       ****   This library is distributed in the hope that it will be useful,
+  11:Print.h       ****   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12:Print.h       ****   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  13:Print.h       ****   Lesser General Public License for more details.
+  14:Print.h       **** 
+  15:Print.h       ****   You should have received a copy of the GNU Lesser General Public
+  16:Print.h       ****   License along with this library; if not, write to the Free Software
+  17:Print.h       ****   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  18:Print.h       **** */
+  19:Print.h       **** 
+  20:Print.h       **** #ifndef Print_h
+  21:Print.h       **** #define Print_h
+  22:Print.h       **** 
+  23:Print.h       **** #include <inttypes.h>
+  24:Print.h       **** #include <stdio.h> // for size_t
+  25:Print.h       **** 
+  26:Print.h       **** #include "WString.h"
+  27:Print.h       **** #include "Printable.h"
+  28:Print.h       **** 
+  29:Print.h       **** #define DEC 10
+  30:Print.h       **** #define HEX 16
+  31:Print.h       **** #define OCT 8
+  32:Print.h       **** #ifdef BIN // Prevent warnings if BIN is previously defined in "iotnx4.h" or similar
+  33:Print.h       **** #undef BIN
+  34:Print.h       **** #endif
+  35:Print.h       **** #define BIN 2
+  36:Print.h       **** 
+  37:Print.h       **** class Print
+  38:Print.h       **** {
+  39:Print.h       ****   private:
+  40:Print.h       ****     int write_error;
+  41:Print.h       ****     size_t printNumber(unsigned long, uint8_t);
+  42:Print.h       ****     size_t printFloat(double, uint8_t);
+  43:Print.h       ****   protected:
+  44:Print.h       ****     void setWriteError(int err = 1) { write_error = err; }
+  45:Print.h       ****   public:
+  46:Print.h       ****     Print() : write_error(0) {}
+  47:Print.h       ****   
+  48:Print.h       ****     int getWriteError() { return write_error; }
+  49:Print.h       ****     void clearWriteError() { setWriteError(0); }
+  50:Print.h       ****   
+  51:Print.h       ****     virtual size_t write(uint8_t) = 0;
+  52:Print.h       ****     size_t write(const char *str) {
+  53:Print.h       ****       if (str == NULL) return 0;
+  54:Print.h       ****       return write((const uint8_t *)str, strlen(str));
+  55:Print.h       ****     }
+  56:Print.h       ****     virtual size_t write(const uint8_t *buffer, size_t size);
+  57:Print.h       ****     size_t write(const char *buffer, size_t size) {
+  58:Print.h       ****       return write((const uint8_t *)buffer, size);
+  59:Print.h       ****     }
+  60:Print.h       **** 
+  61:Print.h       ****     // default to zero, meaning "a single write may block"
+  62:Print.h       ****     // should be overriden by subclasses with buffering
+  63:Print.h       ****     virtual int availableForWrite() { return 0; }
+  16               		.loc 1 63 0
+  17               		.cfi_startproc
+  18               	.LVL0:
+  19               	/* prologue: function */
+  20               	/* frame size = 0 */
+  21               	/* stack size = 0 */
+  22               	.L__stack_usage = 0
+  23               		.loc 1 63 0
+  24 0000 80E0      		ldi r24,0
+  25 0002 90E0      		ldi r25,0
+  26               	.LVL1:
+  27 0004 0895      		ret
+  28               		.cfi_endproc
+  29               	.LFE87:
+  31               		.section	.text._ZN5Print5flushEv,"axG",@progbits,_ZN5Print5flushEv,comdat
+  32               		.weak	_ZN5Print5flushEv
+  34               	_ZN5Print5flushEv:
+  35               	.LFB88:
+  64:Print.h       **** 
+  65:Print.h       ****     size_t print(const __FlashStringHelper *);
+  66:Print.h       ****     size_t print(const String &);
+  67:Print.h       ****     size_t print(const char[]);
+  68:Print.h       ****     size_t print(char);
+  69:Print.h       ****     size_t print(unsigned char, int = DEC);
+  70:Print.h       ****     size_t print(int, int = DEC);
+  71:Print.h       ****     size_t print(unsigned int, int = DEC);
+  72:Print.h       ****     size_t print(long, int = DEC);
+  73:Print.h       ****     size_t print(unsigned long, int = DEC);
+  74:Print.h       ****     size_t print(double, int = 2);
+  75:Print.h       ****     size_t print(const Printable&);
+  76:Print.h       **** 
+  77:Print.h       ****     size_t println(const __FlashStringHelper *);
+  78:Print.h       ****     size_t println(const String &s);
+  79:Print.h       ****     size_t println(const char[]);
+  80:Print.h       ****     size_t println(char);
+  81:Print.h       ****     size_t println(unsigned char, int = DEC);
+  82:Print.h       ****     size_t println(int, int = DEC);
+  83:Print.h       ****     size_t println(unsigned int, int = DEC);
+  84:Print.h       ****     size_t println(long, int = DEC);
+  85:Print.h       ****     size_t println(unsigned long, int = DEC);
+  86:Print.h       ****     size_t println(double, int = 2);
+  87:Print.h       ****     size_t println(const Printable&);
+  88:Print.h       ****     size_t println(void);
+  89:Print.h       **** 
+  90:Print.h       ****     virtual void flush() { /* Empty implementation for backward compatibility */ }
+  36               		.loc 1 90 0
+  37               		.cfi_startproc
+  38               	.LVL2:
+  39               	/* prologue: function */
+  40               	/* frame size = 0 */
+  41               	/* stack size = 0 */
+  42               	.L__stack_usage = 0
+  43 0000 0895      		ret
+  44               		.cfi_endproc
+  45               	.LFE88:
+  47               		.text
+  48               	.global	__vector_11
+  50               	__vector_11:
+  51               	.LFB112:
+  52               		.file 2 "HardwareSerial0.cpp"
+   1:HardwareSerial0.cpp **** /*
+   2:HardwareSerial0.cpp ****   HardwareSerial0.cpp - Hardware serial library for Wiring
+   3:HardwareSerial0.cpp ****   Copyright (c) 2006 Nicholas Zambetti.  All right reserved.
+   4:HardwareSerial0.cpp **** 
+   5:HardwareSerial0.cpp ****   This library is free software; you can redistribute it and/or
+   6:HardwareSerial0.cpp ****   modify it under the terms of the GNU Lesser General Public
+   7:HardwareSerial0.cpp ****   License as published by the Free Software Foundation; either
+   8:HardwareSerial0.cpp ****   version 2.1 of the License, or (at your option) any later version.
+   9:HardwareSerial0.cpp **** 
+  10:HardwareSerial0.cpp ****   This library is distributed in the hope that it will be useful,
+  11:HardwareSerial0.cpp ****   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12:HardwareSerial0.cpp ****   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  13:HardwareSerial0.cpp ****   Lesser General Public License for more details.
+  14:HardwareSerial0.cpp **** 
+  15:HardwareSerial0.cpp ****   You should have received a copy of the GNU Lesser General Public
+  16:HardwareSerial0.cpp ****   License along with this library; if not, write to the Free Software
+  17:HardwareSerial0.cpp ****   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  18:HardwareSerial0.cpp **** 
+  19:HardwareSerial0.cpp ****   Modified 23 November 2006 by David A. Mellis
+  20:HardwareSerial0.cpp ****   Modified 28 September 2010 by Mark Sproul
+  21:HardwareSerial0.cpp ****   Modified 14 August 2012 by Alarus
+  22:HardwareSerial0.cpp ****   Modified 3 December 2013 by Matthijs Kooijman
+  23:HardwareSerial0.cpp **** */
+  24:HardwareSerial0.cpp **** 
+  25:HardwareSerial0.cpp **** #include "Arduino.h"
+  26:HardwareSerial0.cpp **** #include "HardwareSerial.h"
+  27:HardwareSerial0.cpp **** #include "HardwareSerial_private.h"
+  28:HardwareSerial0.cpp **** 
+  29:HardwareSerial0.cpp **** // Each HardwareSerial is defined in its own file, sine the linker pulls
+  30:HardwareSerial0.cpp **** // in the entire file when any element inside is used. --gc-sections can
+  31:HardwareSerial0.cpp **** // additionally cause unused symbols to be dropped, but ISRs have the
+  32:HardwareSerial0.cpp **** // "used" attribute so are never dropped and they keep the
+  33:HardwareSerial0.cpp **** // HardwareSerial instance in as well. Putting each instance in its own
+  34:HardwareSerial0.cpp **** // file prevents the linker from pulling in any unused instances in the
+  35:HardwareSerial0.cpp **** // first place.
+  36:HardwareSerial0.cpp **** 
+  37:HardwareSerial0.cpp **** #if defined(HAVE_HWSERIAL0)
+  38:HardwareSerial0.cpp **** 
+  39:HardwareSerial0.cpp **** #if defined(USART_RX_vect)
+  40:HardwareSerial0.cpp ****   ISR(USART_RX_vect)
+  41:HardwareSerial0.cpp **** #elif defined(USART0_RX_vect)
+  42:HardwareSerial0.cpp ****   ISR(USART0_RX_vect)
+  43:HardwareSerial0.cpp **** #elif defined(USART_RXC_vect)
+  44:HardwareSerial0.cpp ****   ISR(USART_RXC_vect) // ATmega8
+  45:HardwareSerial0.cpp **** #else
+  46:HardwareSerial0.cpp ****   #error "Don't know what the Data Received vector is called for Serial"
+  47:HardwareSerial0.cpp **** #endif
+  48:HardwareSerial0.cpp ****   {
+  53               		.loc 2 48 0
+  54               		.cfi_startproc
+  55               		.loc 2 48 0
+  56 0000 1F92      		push r1
+  57               	.LCFI0:
+  58               		.cfi_def_cfa_offset 3
+  59               		.cfi_offset 1, -2
+  60 0002 0F92      		push r0
+  61               	.LCFI1:
+  62               		.cfi_def_cfa_offset 4
+  63               		.cfi_offset 0, -3
+  64 0004 0FB6      		in r0,__SREG__
+  65 0006 0F92      		push r0
+  66 0008 1124      		clr __zero_reg__
+  67 000a 2F93      		push r18
+  68               	.LCFI2:
+  69               		.cfi_def_cfa_offset 5
+  70               		.cfi_offset 18, -4
+  71 000c 8F93      		push r24
+  72               	.LCFI3:
+  73               		.cfi_def_cfa_offset 6
+  74               		.cfi_offset 24, -5
+  75 000e 9F93      		push r25
+  76               	.LCFI4:
+  77               		.cfi_def_cfa_offset 7
+  78               		.cfi_offset 25, -6
+  79 0010 EF93      		push r30
+  80               	.LCFI5:
+  81               		.cfi_def_cfa_offset 8
+  82               		.cfi_offset 30, -7
+  83 0012 FF93      		push r31
+  84               	.LCFI6:
+  85               		.cfi_def_cfa_offset 9
+  86               		.cfi_offset 31, -8
+  87               	/* prologue: Signal */
+  88               	/* frame size = 0 */
+  89               	/* stack size = 8 */
+  90               	.L__stack_usage = 8
+  91               	.LVL3:
+  92               	.LBB34:
+  93               	.LBB35:
+  94               		.file 3 "HardwareSerial_private.h"
+   1:HardwareSerial_private.h **** /*
+   2:HardwareSerial_private.h ****   HardwareSerial_private.h - Hardware serial library for Wiring
+   3:HardwareSerial_private.h ****   Copyright (c) 2006 Nicholas Zambetti.  All right reserved.
+   4:HardwareSerial_private.h **** 
+   5:HardwareSerial_private.h ****   This library is free software; you can redistribute it and/or
+   6:HardwareSerial_private.h ****   modify it under the terms of the GNU Lesser General Public
+   7:HardwareSerial_private.h ****   License as published by the Free Software Foundation; either
+   8:HardwareSerial_private.h ****   version 2.1 of the License, or (at your option) any later version.
+   9:HardwareSerial_private.h **** 
+  10:HardwareSerial_private.h ****   This library is distributed in the hope that it will be useful,
+  11:HardwareSerial_private.h ****   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12:HardwareSerial_private.h ****   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  13:HardwareSerial_private.h ****   Lesser General Public License for more details.
+  14:HardwareSerial_private.h **** 
+  15:HardwareSerial_private.h ****   You should have received a copy of the GNU Lesser General Public
+  16:HardwareSerial_private.h ****   License along with this library; if not, write to the Free Software
+  17:HardwareSerial_private.h ****   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  18:HardwareSerial_private.h **** 
+  19:HardwareSerial_private.h ****   Modified 23 November 2006 by David A. Mellis
+  20:HardwareSerial_private.h ****   Modified 28 September 2010 by Mark Sproul
+  21:HardwareSerial_private.h ****   Modified 14 August 2012 by Alarus
+  22:HardwareSerial_private.h **** */
+  23:HardwareSerial_private.h **** 
+  24:HardwareSerial_private.h **** #include "wiring_private.h"
+  25:HardwareSerial_private.h **** 
+  26:HardwareSerial_private.h **** // this next line disables the entire HardwareSerial.cpp, 
+  27:HardwareSerial_private.h **** // this is so I can support Attiny series and any other chip without a uart
+  28:HardwareSerial_private.h **** #if defined(HAVE_HWSERIAL0) || defined(HAVE_HWSERIAL1) || defined(HAVE_HWSERIAL2) || defined(HAVE_H
+  29:HardwareSerial_private.h **** 
+  30:HardwareSerial_private.h **** // Ensure that the various bit positions we use are available with a 0
+  31:HardwareSerial_private.h **** // postfix, so we can always use the values for UART0 for all UARTs. The
+  32:HardwareSerial_private.h **** // alternative, passing the various values for each UART to the
+  33:HardwareSerial_private.h **** // HardwareSerial constructor also works, but makes the code bigger and
+  34:HardwareSerial_private.h **** // slower.
+  35:HardwareSerial_private.h **** #if !defined(TXC0)
+  36:HardwareSerial_private.h **** #if defined(TXC)
+  37:HardwareSerial_private.h **** // Some chips like ATmega8 don't have UPE, only PE. The other bits are
+  38:HardwareSerial_private.h **** // named as expected.
+  39:HardwareSerial_private.h **** #if !defined(UPE) && defined(PE)
+  40:HardwareSerial_private.h **** #define UPE PE
+  41:HardwareSerial_private.h **** #endif
+  42:HardwareSerial_private.h **** // On ATmega8, the uart and its bits are not numbered, so there is no TXC0 etc.
+  43:HardwareSerial_private.h **** #define TXC0 TXC
+  44:HardwareSerial_private.h **** #define RXEN0 RXEN
+  45:HardwareSerial_private.h **** #define TXEN0 TXEN
+  46:HardwareSerial_private.h **** #define RXCIE0 RXCIE
+  47:HardwareSerial_private.h **** #define UDRIE0 UDRIE
+  48:HardwareSerial_private.h **** #define U2X0 U2X
+  49:HardwareSerial_private.h **** #define UPE0 UPE
+  50:HardwareSerial_private.h **** #define UDRE0 UDRE
+  51:HardwareSerial_private.h **** #elif defined(TXC1)
+  52:HardwareSerial_private.h **** // Some devices have uart1 but no uart0
+  53:HardwareSerial_private.h **** #define TXC0 TXC1
+  54:HardwareSerial_private.h **** #define RXEN0 RXEN1
+  55:HardwareSerial_private.h **** #define TXEN0 TXEN1
+  56:HardwareSerial_private.h **** #define RXCIE0 RXCIE1
+  57:HardwareSerial_private.h **** #define UDRIE0 UDRIE1
+  58:HardwareSerial_private.h **** #define U2X0 U2X1
+  59:HardwareSerial_private.h **** #define UPE0 UPE1
+  60:HardwareSerial_private.h **** #define UDRE0 UDRE1
+  61:HardwareSerial_private.h **** #else
+  62:HardwareSerial_private.h **** #error No UART found in HardwareSerial.cpp
+  63:HardwareSerial_private.h **** #endif
+  64:HardwareSerial_private.h **** #endif // !defined TXC0
+  65:HardwareSerial_private.h **** 
+  66:HardwareSerial_private.h **** // Check at compiletime that it is really ok to use the bit positions of
+  67:HardwareSerial_private.h **** // UART0 for the other UARTs as well, in case these values ever get
+  68:HardwareSerial_private.h **** // changed for future hardware.
+  69:HardwareSerial_private.h **** #if defined(TXC1) && (TXC1 != TXC0 || RXEN1 != RXEN0 || RXCIE1 != RXCIE0 || \
+  70:HardwareSerial_private.h **** 		      UDRIE1 != UDRIE0 || U2X1 != U2X0 || UPE1 != UPE0 || \
+  71:HardwareSerial_private.h **** 		      UDRE1 != UDRE0)
+  72:HardwareSerial_private.h **** #error "Not all bit positions for UART1 are the same as for UART0"
+  73:HardwareSerial_private.h **** #endif
+  74:HardwareSerial_private.h **** #if defined(TXC2) && (TXC2 != TXC0 || RXEN2 != RXEN0 || RXCIE2 != RXCIE0 || \
+  75:HardwareSerial_private.h **** 		      UDRIE2 != UDRIE0 || U2X2 != U2X0 || UPE2 != UPE0 || \
+  76:HardwareSerial_private.h **** 		      UDRE2 != UDRE0)
+  77:HardwareSerial_private.h **** #error "Not all bit positions for UART2 are the same as for UART0"
+  78:HardwareSerial_private.h **** #endif
+  79:HardwareSerial_private.h **** #if defined(TXC3) && (TXC3 != TXC0 || RXEN3 != RXEN0 || RXCIE3 != RXCIE0 || \
+  80:HardwareSerial_private.h **** 		      UDRIE3 != UDRIE0 || U3X3 != U3X0 || UPE3 != UPE0 || \
+  81:HardwareSerial_private.h **** 		      UDRE3 != UDRE0)
+  82:HardwareSerial_private.h **** #error "Not all bit positions for UART3 are the same as for UART0"
+  83:HardwareSerial_private.h **** #endif
+  84:HardwareSerial_private.h **** 
+  85:HardwareSerial_private.h **** // Constructors ////////////////////////////////////////////////////////////////
+  86:HardwareSerial_private.h **** 
+  87:HardwareSerial_private.h **** HardwareSerial::HardwareSerial(
+  88:HardwareSerial_private.h ****   volatile uint8_t *ubrrh, volatile uint8_t *ubrrl,
+  89:HardwareSerial_private.h ****   volatile uint8_t *ucsra, volatile uint8_t *ucsrb,
+  90:HardwareSerial_private.h ****   volatile uint8_t *ucsrc, volatile uint8_t *udr) :
+  91:HardwareSerial_private.h ****     _ubrrh(ubrrh), _ubrrl(ubrrl),
+  92:HardwareSerial_private.h ****     _ucsra(ucsra), _ucsrb(ucsrb), _ucsrc(ucsrc),
+  93:HardwareSerial_private.h ****     _udr(udr),
+  94:HardwareSerial_private.h ****     _rx_buffer_head(0), _rx_buffer_tail(0),
+  95:HardwareSerial_private.h ****     _tx_buffer_head(0), _tx_buffer_tail(0)
+  96:HardwareSerial_private.h **** {
+  97:HardwareSerial_private.h **** }
+  98:HardwareSerial_private.h **** 
+  99:HardwareSerial_private.h **** // Actual interrupt handlers //////////////////////////////////////////////////////////////
+ 100:HardwareSerial_private.h **** 
+ 101:HardwareSerial_private.h **** void HardwareSerial::_rx_complete_irq(void)
+ 102:HardwareSerial_private.h **** {
+ 103:HardwareSerial_private.h ****   if (bit_is_clear(*_ucsra, UPE0)) {
+  95               		.loc 3 103 0
+  96 0014 E091 0000 		lds r30,Serial+16
+  97 0018 F091 0000 		lds r31,Serial+16+1
+  98 001c 8081      		ld r24,Z
+  99 001e E091 0000 		lds r30,Serial+22
+ 100 0022 F091 0000 		lds r31,Serial+22+1
+ 101 0026 82FD      		sbrc r24,2
+ 102 0028 00C0      		rjmp .L4
+ 103               	.LVL4:
+ 104               	.LBE35:
+ 105               	.LBB36:
+ 106               	.LBB37:
+ 104:HardwareSerial_private.h ****     // No Parity error, read byte and store it in the buffer if there is
+ 105:HardwareSerial_private.h ****     // room
+ 106:HardwareSerial_private.h ****     unsigned char c = *_udr;
+ 107               		.loc 3 106 0
+ 108 002a 9081      		ld r25,Z
+ 109               	.LVL5:
+ 107:HardwareSerial_private.h ****     rx_buffer_index_t i = (unsigned int)(_rx_buffer_head + 1) % SERIAL_RX_BUFFER_SIZE;
+ 110               		.loc 3 107 0
+ 111 002c 8091 0000 		lds r24,Serial+25
+ 112 0030 8F5F      		subi r24,lo8(-(1))
+ 113 0032 8F73      		andi r24,lo8(63)
+ 114               	.LVL6:
+ 108:HardwareSerial_private.h **** 
+ 109:HardwareSerial_private.h ****     // if we should be storing the received character into the location
+ 110:HardwareSerial_private.h ****     // just before the tail (meaning that the head would advance to the
+ 111:HardwareSerial_private.h ****     // current location of the tail), we're about to overflow the buffer
+ 112:HardwareSerial_private.h ****     // and so we don't write the character or advance the head.
+ 113:HardwareSerial_private.h ****     if (i != _rx_buffer_tail) {
+ 115               		.loc 3 113 0
+ 116 0034 2091 0000 		lds r18,Serial+26
+ 117 0038 8217      		cp r24,r18
+ 118 003a 01F0      		breq .L3
+ 114:HardwareSerial_private.h ****       _rx_buffer[_rx_buffer_head] = c;
+ 119               		.loc 3 114 0
+ 120 003c E091 0000 		lds r30,Serial+25
+ 121 0040 F0E0      		ldi r31,0
+ 122 0042 E050      		subi r30,lo8(-(Serial))
+ 123 0044 F040      		sbci r31,hi8(-(Serial))
+ 124 0046 958F      		std Z+29,r25
+ 115:HardwareSerial_private.h ****       _rx_buffer_head = i;
+ 125               		.loc 3 115 0
+ 126 0048 8093 0000 		sts Serial+25,r24
+ 127 004c 00C0      		rjmp .L3
+ 128               	.LVL7:
+ 129               	.L4:
+ 130               	.LBE37:
+ 131               	.LBE36:
+ 132               	.LBB38:
+ 116:HardwareSerial_private.h ****     }
+ 117:HardwareSerial_private.h ****   } else {
+ 118:HardwareSerial_private.h ****     // Parity error, read byte but discard it
+ 119:HardwareSerial_private.h ****     *_udr;
+ 133               		.loc 3 119 0
+ 134 004e 8081      		ld r24,Z
+ 135               	.L3:
+ 136               	/* epilogue start */
+ 137               	.LBE38:
+ 138               	.LBE34:
+  49:HardwareSerial0.cpp ****     Serial._rx_complete_irq();
+  50:HardwareSerial0.cpp ****   }
+ 139               		.loc 2 50 0
+ 140 0050 FF91      		pop r31
+ 141 0052 EF91      		pop r30
+ 142 0054 9F91      		pop r25
+ 143 0056 8F91      		pop r24
+ 144 0058 2F91      		pop r18
+ 145 005a 0F90      		pop r0
+ 146 005c 0FBE      		out __SREG__,r0
+ 147 005e 0F90      		pop r0
+ 148 0060 1F90      		pop r1
+ 149 0062 1895      		reti
+ 150               		.cfi_endproc
+ 151               	.LFE112:
+ 153               	.global	__vector_12
+ 155               	__vector_12:
+ 156               	.LFB113:
+  51:HardwareSerial0.cpp **** 
+  52:HardwareSerial0.cpp **** #if defined(UART0_UDRE_vect)
+  53:HardwareSerial0.cpp **** ISR(UART0_UDRE_vect)
+  54:HardwareSerial0.cpp **** #elif defined(UART_UDRE_vect)
+  55:HardwareSerial0.cpp **** ISR(UART_UDRE_vect)
+  56:HardwareSerial0.cpp **** #elif defined(USART0_UDRE_vect)
+  57:HardwareSerial0.cpp **** ISR(USART0_UDRE_vect)
+  58:HardwareSerial0.cpp **** #elif defined(USART_UDRE_vect)
+  59:HardwareSerial0.cpp **** ISR(USART_UDRE_vect)
+  60:HardwareSerial0.cpp **** #else
+  61:HardwareSerial0.cpp ****   #error "Don't know what the Data Register Empty vector is called for Serial"
+  62:HardwareSerial0.cpp **** #endif
+  63:HardwareSerial0.cpp **** {
+ 157               		.loc 2 63 0
+ 158               		.cfi_startproc
+ 159 0064 1F92      		push r1
+ 160               	.LCFI7:
+ 161               		.cfi_def_cfa_offset 3
+ 162               		.cfi_offset 1, -2
+ 163 0066 0F92      		push r0
+ 164               	.LCFI8:
+ 165               		.cfi_def_cfa_offset 4
+ 166               		.cfi_offset 0, -3
+ 167 0068 0FB6      		in r0,__SREG__
+ 168 006a 0F92      		push r0
+ 169 006c 1124      		clr __zero_reg__
+ 170 006e 2F93      		push r18
+ 171               	.LCFI9:
+ 172               		.cfi_def_cfa_offset 5
+ 173               		.cfi_offset 18, -4
+ 174 0070 3F93      		push r19
+ 175               	.LCFI10:
+ 176               		.cfi_def_cfa_offset 6
+ 177               		.cfi_offset 19, -5
+ 178 0072 4F93      		push r20
+ 179               	.LCFI11:
+ 180               		.cfi_def_cfa_offset 7
+ 181               		.cfi_offset 20, -6
+ 182 0074 5F93      		push r21
+ 183               	.LCFI12:
+ 184               		.cfi_def_cfa_offset 8
+ 185               		.cfi_offset 21, -7
+ 186 0076 6F93      		push r22
+ 187               	.LCFI13:
+ 188               		.cfi_def_cfa_offset 9
+ 189               		.cfi_offset 22, -8
+ 190 0078 7F93      		push r23
+ 191               	.LCFI14:
+ 192               		.cfi_def_cfa_offset 10
+ 193               		.cfi_offset 23, -9
+ 194 007a 8F93      		push r24
+ 195               	.LCFI15:
+ 196               		.cfi_def_cfa_offset 11
+ 197               		.cfi_offset 24, -10
+ 198 007c 9F93      		push r25
+ 199               	.LCFI16:
+ 200               		.cfi_def_cfa_offset 12
+ 201               		.cfi_offset 25, -11
+ 202 007e AF93      		push r26
+ 203               	.LCFI17:
+ 204               		.cfi_def_cfa_offset 13
+ 205               		.cfi_offset 26, -12
+ 206 0080 BF93      		push r27
+ 207               	.LCFI18:
+ 208               		.cfi_def_cfa_offset 14
+ 209               		.cfi_offset 27, -13
+ 210 0082 EF93      		push r30
+ 211               	.LCFI19:
+ 212               		.cfi_def_cfa_offset 15
+ 213               		.cfi_offset 30, -14
+ 214 0084 FF93      		push r31
+ 215               	.LCFI20:
+ 216               		.cfi_def_cfa_offset 16
+ 217               		.cfi_offset 31, -15
+ 218               	/* prologue: Signal */
+ 219               	/* frame size = 0 */
+ 220               	/* stack size = 15 */
+ 221               	.L__stack_usage = 15
+  64:HardwareSerial0.cpp ****   Serial._tx_udr_empty_irq();
+ 222               		.loc 2 64 0
+ 223 0086 80E0      		ldi r24,lo8(Serial)
+ 224 0088 90E0      		ldi r25,hi8(Serial)
+ 225 008a 0E94 0000 		call _ZN14HardwareSerial17_tx_udr_empty_irqEv
+ 226               	.LVL8:
+ 227               	/* epilogue start */
+  65:HardwareSerial0.cpp **** }
+ 228               		.loc 2 65 0
+ 229 008e FF91      		pop r31
+ 230 0090 EF91      		pop r30
+ 231 0092 BF91      		pop r27
+ 232 0094 AF91      		pop r26
+ 233 0096 9F91      		pop r25
+ 234 0098 8F91      		pop r24
+ 235 009a 7F91      		pop r23
+ 236 009c 6F91      		pop r22
+ 237 009e 5F91      		pop r21
+ 238 00a0 4F91      		pop r20
+ 239 00a2 3F91      		pop r19
+ 240 00a4 2F91      		pop r18
+ 241 00a6 0F90      		pop r0
+ 242 00a8 0FBE      		out __SREG__,r0
+ 243 00aa 0F90      		pop r0
+ 244 00ac 1F90      		pop r1
+ 245 00ae 1895      		reti
+ 246               		.cfi_endproc
+ 247               	.LFE113:
+ 249               	.global	_Z17Serial0_availablev
+ 251               	_Z17Serial0_availablev:
+ 252               	.LFB114:
+  66:HardwareSerial0.cpp **** 
+  67:HardwareSerial0.cpp **** #if defined(UBRRH) && defined(UBRRL)
+  68:HardwareSerial0.cpp ****   HardwareSerial Serial(&UBRRH, &UBRRL, &UCSRA, &UCSRB, &UCSRC, &UDR);
+  69:HardwareSerial0.cpp **** #else
+  70:HardwareSerial0.cpp ****   HardwareSerial Serial(&UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UCSR0C, &UDR0);
+  71:HardwareSerial0.cpp **** #endif
+  72:HardwareSerial0.cpp **** 
+  73:HardwareSerial0.cpp **** // Function that can be weakly referenced by serialEventRun to prevent
+  74:HardwareSerial0.cpp **** // pulling in this file if it's not otherwise used.
+  75:HardwareSerial0.cpp **** bool Serial0_available() {
+ 253               		.loc 2 75 0
+ 254               		.cfi_startproc
+ 255               	/* prologue: function */
+ 256               	/* frame size = 0 */
+ 257               	/* stack size = 0 */
+ 258               	.L__stack_usage = 0
+  76:HardwareSerial0.cpp ****   return Serial.available();
+ 259               		.loc 2 76 0
+ 260 00b0 80E0      		ldi r24,lo8(Serial)
+ 261 00b2 90E0      		ldi r25,hi8(Serial)
+ 262 00b4 0E94 0000 		call _ZN14HardwareSerial9availableEv
+ 263               	.LVL9:
+ 264 00b8 21E0      		ldi r18,lo8(1)
+ 265 00ba 892B      		or r24,r25
+ 266 00bc 01F4      		brne .L9
+ 267 00be 20E0      		ldi r18,0
+ 268               	.L9:
+  77:HardwareSerial0.cpp **** }
+ 269               		.loc 2 77 0
+ 270 00c0 822F      		mov r24,r18
+ 271 00c2 0895      		ret
+ 272               		.cfi_endproc
+ 273               	.LFE114:
+ 275               		.section	.text.startup,"ax",@progbits
+ 277               	_GLOBAL__sub_I___vector_11:
+ 278               	.LFB116:
+ 279               		.loc 2 77 0
+ 280               		.cfi_startproc
+ 281               	/* prologue: function */
+ 282               	/* frame size = 0 */
+ 283               	/* stack size = 0 */
+ 284               	.L__stack_usage = 0
+ 285               	.LVL10:
+ 286               	.LBB47:
+ 287               	.LBB48:
+ 288               	.LBB49:
+ 289               	.LBB50:
+ 290               	.LBB51:
+ 291               	.LBB52:
+ 292               	.LBB53:
+ 293               	.LBB54:
+  46:Print.h       ****   
+ 294               		.loc 1 46 0
+ 295 0000 E0E0      		ldi r30,lo8(Serial)
+ 296 0002 F0E0      		ldi r31,hi8(Serial)
+ 297 0004 1382      		std Z+3,__zero_reg__
+ 298 0006 1282      		std Z+2,__zero_reg__
+ 299               	.LBE54:
+ 300               	.LBE53:
+ 301               		.file 4 "Stream.h"
+   1:Stream.h      **** /*
+   2:Stream.h      ****   Stream.h - base class for character-based streams.
+   3:Stream.h      ****   Copyright (c) 2010 David A. Mellis.  All right reserved.
+   4:Stream.h      **** 
+   5:Stream.h      ****   This library is free software; you can redistribute it and/or
+   6:Stream.h      ****   modify it under the terms of the GNU Lesser General Public
+   7:Stream.h      ****   License as published by the Free Software Foundation; either
+   8:Stream.h      ****   version 2.1 of the License, or (at your option) any later version.
+   9:Stream.h      **** 
+  10:Stream.h      ****   This library is distributed in the hope that it will be useful,
+  11:Stream.h      ****   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  12:Stream.h      ****   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  13:Stream.h      ****   Lesser General Public License for more details.
+  14:Stream.h      **** 
+  15:Stream.h      ****   You should have received a copy of the GNU Lesser General Public
+  16:Stream.h      ****   License along with this library; if not, write to the Free Software
+  17:Stream.h      ****   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  18:Stream.h      **** 
+  19:Stream.h      ****   parsing functions based on TextFinder library by Michael Margolis
+  20:Stream.h      **** */
+  21:Stream.h      **** 
+  22:Stream.h      **** #ifndef Stream_h
+  23:Stream.h      **** #define Stream_h
+  24:Stream.h      **** 
+  25:Stream.h      **** #include <inttypes.h>
+  26:Stream.h      **** #include "Print.h"
+  27:Stream.h      **** 
+  28:Stream.h      **** // compatability macros for testing
+  29:Stream.h      **** /*
+  30:Stream.h      **** #define   getInt()            parseInt()
+  31:Stream.h      **** #define   getInt(ignore)    parseInt(ignore)
+  32:Stream.h      **** #define   getFloat()          parseFloat()
+  33:Stream.h      **** #define   getFloat(ignore)  parseFloat(ignore)
+  34:Stream.h      **** #define   getString( pre_string, post_string, buffer, length)
+  35:Stream.h      **** readBytesBetween( pre_string, terminator, buffer, length)
+  36:Stream.h      **** */
+  37:Stream.h      **** 
+  38:Stream.h      **** // This enumeration provides the lookahead options for parseInt(), parseFloat()
+  39:Stream.h      **** // The rules set out here are used until either the first valid character is found
+  40:Stream.h      **** // or a time out occurs due to lack of input.
+  41:Stream.h      **** enum LookaheadMode{
+  42:Stream.h      ****     SKIP_ALL,       // All invalid characters are ignored.
+  43:Stream.h      ****     SKIP_NONE,      // Nothing is skipped, and the stream is not touched unless the first waiting c
+  44:Stream.h      ****     SKIP_WHITESPACE // Only tabs, spaces, line feeds & carriage returns are skipped.
+  45:Stream.h      **** };
+  46:Stream.h      **** 
+  47:Stream.h      **** #define NO_IGNORE_CHAR  '\x01' // a char not found in a valid ASCII numeric field
+  48:Stream.h      **** 
+  49:Stream.h      **** class Stream : public Print
+  50:Stream.h      **** {
+  51:Stream.h      ****   protected:
+  52:Stream.h      ****     unsigned long _timeout;      // number of milliseconds to wait for the next char before abortin
+  53:Stream.h      ****     unsigned long _startMillis;  // used for timeout measurement
+  54:Stream.h      ****     int timedRead();    // read stream with timeout
+  55:Stream.h      ****     int timedPeek();    // peek stream with timeout
+  56:Stream.h      ****     int peekNextDigit(LookaheadMode lookahead, bool detectDecimal); // returns the next numeric dig
+  57:Stream.h      **** 
+  58:Stream.h      ****   public:
+  59:Stream.h      ****     virtual int available() = 0;
+  60:Stream.h      ****     virtual int read() = 0;
+  61:Stream.h      ****     virtual int peek() = 0;
+  62:Stream.h      **** 
+  63:Stream.h      ****     Stream() {_timeout=1000;}
+ 302               		.loc 4 63 0
+ 303 0008 88EE      		ldi r24,lo8(-24)
+ 304 000a 93E0      		ldi r25,lo8(3)
+ 305 000c A0E0      		ldi r26,0
+ 306 000e B0E0      		ldi r27,0
+ 307 0010 8483      		std Z+4,r24
+ 308 0012 9583      		std Z+5,r25
+ 309 0014 A683      		std Z+6,r26
+ 310 0016 B783      		std Z+7,r27
+ 311               	.LBE52:
+ 312               	.LBE51:
+  95:HardwareSerial_private.h **** {
+ 313               		.loc 3 95 0
+ 314 0018 80E0      		ldi r24,lo8(_ZTV14HardwareSerial+4)
+ 315 001a 90E0      		ldi r25,hi8(_ZTV14HardwareSerial+4)
+ 316 001c 9183      		std Z+1,r25
+ 317 001e 8083      		st Z,r24
+ 318 0020 80E4      		ldi r24,lo8(64)
+ 319 0022 90E0      		ldi r25,0
+ 320 0024 9587      		std Z+13,r25
+ 321 0026 8487      		std Z+12,r24
+ 322 0028 29E2      		ldi r18,lo8(41)
+ 323 002a 30E0      		ldi r19,0
+ 324 002c 3787      		std Z+15,r19
+ 325 002e 2687      		std Z+14,r18
+ 326 0030 2BE2      		ldi r18,lo8(43)
+ 327 0032 30E0      		ldi r19,0
+ 328 0034 318B      		std Z+17,r19
+ 329 0036 208B      		std Z+16,r18
+ 330 0038 2AE2      		ldi r18,lo8(42)
+ 331 003a 30E0      		ldi r19,0
+ 332 003c 338B      		std Z+19,r19
+ 333 003e 228B      		std Z+18,r18
+ 334 0040 958B      		std Z+21,r25
+ 335 0042 848B      		std Z+20,r24
+ 336 0044 8CE2      		ldi r24,lo8(44)
+ 337 0046 90E0      		ldi r25,0
+ 338 0048 978B      		std Z+23,r25
+ 339 004a 868B      		std Z+22,r24
+ 340 004c 118E      		std Z+25,__zero_reg__
+ 341 004e 128E      		std Z+26,__zero_reg__
+ 342 0050 138E      		std Z+27,__zero_reg__
+ 343 0052 148E      		std Z+28,__zero_reg__
+ 344 0054 0895      		ret
+ 345               	.LBE50:
+ 346               	.LBE49:
+ 347               	.LBE48:
+ 348               	.LBE47:
+ 349               		.cfi_endproc
+ 350               	.LFE116:
+ 352               		.global __do_global_ctors
+ 353               		.section .ctors,"a",@progbits
+ 354               		.p2align	1
+ 355 0000 0000      		.word	gs(_GLOBAL__sub_I___vector_11)
+ 356               	.global	Serial
+ 357               		.section .bss
+ 360               	Serial:
+ 361 0000 0000 0000 		.zero	157
+ 361      0000 0000 
+ 361      0000 0000 
+ 361      0000 0000 
+ 361      0000 0000 
+ 362               		.text
+ 363               	.Letext0:
+ 364               		.file 5 "/usr/lib/gcc/avr/4.9.2/include/stddef.h"
+ 365               		.file 6 "/usr/lib/avr/include/stdint.h"
+ 366               		.file 7 "WString.h"
+ 367               		.file 8 "HardwareSerial.h"
+ 368               		.file 9 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 HardwareSerial0.cpp
+     /tmp/ccAPJIxi.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccAPJIxi.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccAPJIxi.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccAPJIxi.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccAPJIxi.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccAPJIxi.s:13     .text._ZN5Print17availableForWriteEv:0000000000000000 _ZN5Print17availableForWriteEv
+     /tmp/ccAPJIxi.s:34     .text._ZN5Print5flushEv:0000000000000000 _ZN5Print5flushEv
+     /tmp/ccAPJIxi.s:50     .text:0000000000000000 __vector_11
+     /tmp/ccAPJIxi.s:360    .bss:0000000000000000 Serial
+     /tmp/ccAPJIxi.s:155    .text:0000000000000064 __vector_12
+     /tmp/ccAPJIxi.s:251    .text:00000000000000b0 _Z17Serial0_availablev
+     /tmp/ccAPJIxi.s:277    .text.startup:0000000000000000 _GLOBAL__sub_I___vector_11
+
+UNDEFINED SYMBOLS
+_ZN14HardwareSerial17_tx_udr_empty_irqEv
+_ZN14HardwareSerial9availableEv
+_ZTV14HardwareSerial
+__do_global_ctors
+__do_clear_bss
